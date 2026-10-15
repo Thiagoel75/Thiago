@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Subasta Misteriosa & Impostor del Vestuario | Manager Cyberpunk</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#0a0a0f',
+                            800: '#12121a',
+                            700: '#1a1a2e',
+                            600: '#16213e',
+                            500: '#0f3460',
+                            accent: '#e94560',
+                            neon: '#00f5d4',
+                            purple: '#9b5de5',
+                            gold: '#f7b801',
+                            blue: '#00bbf9'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                        'shake': 'shake 0.5s ease-in-out'
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px #00f5d4, 0 0 10px #00f5d4, 0 0 15px #00f5d4' },
+                            '100%': { boxShadow: '0 0 10px #00f5d4, 0 0 20px #00f5d4, 0 0 30px #00f5d4, 0 0 40px #00f5d4' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: 0, transform: 'translateY(30px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '25%': { transform: 'translateX(-5px)' },
+                            '75%': { transform: 'translateX(5px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { scrollbar-width: thin; scrollbar-color: #00f5d4 #1a1a2e; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #00f5d4, #9b5de5); border-radius: 10px; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; overflow-x: hidden; max-width: 100vw; }
+        #auction-screen, #lobby-screen, #impostor-setup-screen { max-width: 100vw; overflow-x: hidden; }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .glass { background: rgba(26, 26, 46, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(0, 245, 212, 0.15); }
+        .glass-strong { background: rgba(22, 33, 62, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(0, 245, 212, 0.25); }
+        .neon-border { box-shadow: 0 0 15px rgba(0, 245, 212, 0.3), inset 0 0 15px rgba(0, 245, 212, 0.05); }
+        .neon-text { text-shadow: 0 0 10px rgba(0, 245, 212, 0.8), 0 0 20px rgba(0, 245, 212, 0.4); }
+        .bg-cyber-grid {
+            background-image: linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .player-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .player-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 15px 40px rgba(0, 245, 212, 0.25); }
+        .btn-cyber { position: relative; overflow: hidden; transition: all 0.3s ease; }
+        .btn-cyber::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .btn-cyber:hover::before { left: 100%; }
+        .chat-bubble { animation: slideUp 0.4s ease-out; }
+        .timer-ring { transition: stroke-dashoffset 0.1s linear; }
+        .hidden-screen { display: none !important; }
+        .pos-POR { border-left: 4px solid #f7b801; }
+        .pos-DEF { border-left: 4px solid #00bbf9; }
+        .pos-MED { border-left: 4px solid #00f5d4; }
+        .pos-DEL { border-left: 4px solid #e94560; }
+        .rating-badge { background: linear-gradient(135deg, #1a1a2e, #0f3460); border: 1px solid rgba(0, 245, 212, 0.4); }
+        .role-impostor { background: linear-gradient(135deg, rgba(233,69,96,0.2), rgba(155,93,229,0.15)); border: 2px solid #e94560; }
+        .role-crew { background: linear-gradient(135deg, rgba(0,245,212,0.15), rgba(0,187,249,0.1)); border: 2px solid #00f5d4; }
+    </style>
+</head>
+<body class="bg-cyber-900 text-white min-h-screen bg-cyber-grid">
+
+    <!-- LOADING -->
+    <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-cyber-900">
+        <div class="text-center animate-fade-in">
+            <div class="mb-8"><i class="fas fa-futbol text-6xl text-cyber-neon animate-float"></i></div>
+            <h1 class="font-montserrat text-4xl md:text-5xl font-black mb-4 neon-text tracking-wider">SUBASTA MISTERIOSA</h1>
+            <p class="text-cyber-neon/70 text-lg mb-8">Manager Cyberpunk Edition</p>
+            <div class="w-64 h-2 bg-cyber-700 rounded-full overflow-hidden mx-auto">
+                <div id="loading-bar" class="h-full bg-gradient-to-r from-cyber-neon via-cyber-purple to-cyber-accent rounded-full transition-all duration-300" style="width:0%"></div>
+            </div>
+            <p id="loading-text" class="mt-4 text-sm text-gray-400">Inicializando...</p>
+        </div>
+    </div>
+
+    <!-- ==================== LOBBY ==================== -->
+    <div id="lobby-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10 animate-slide-up">
+                <div class="inline-flex items-center gap-3 mb-4">
+                    <i class="fas fa-crown text-cyber-gold text-3xl"></i>
+                    <h1 class="font-montserrat text-4xl md:text-5xl font-black tracking-tight">
+                        <span class="text-white">MANAGER</span><span class="text-cyber-neon neon-text"> CYBER</span>
+                    </h1>
+                </div>
+                <p class="text-gray-400 text-lg">Configura tu club y elige tu destino</p>
+            </div>
+
+            <div class="glass-strong rounded-2xl p-6 md:p-8 mb-6 neon-border animate-slide-up">
+                <h2 class="font-montserrat text-xl font-bold mb-6 flex items-center gap-3">
+                    <i class="fas fa-user-tie text-cyber-neon"></i> Perfil del Manager
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Nombre del Club / DT</label>
+                        <div class="relative">
+                            <i class="fas fa-pen absolute left-4 top-1/2 -translate-y-1/2 text-cyber-neon/60"></i>
+                            <input type="text" id="manager-name" value="DT Táctico" maxlength="20"
+                                class="w-full bg-cyber-800/80 border border-cyber-neon/30 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-cyber-neon focus:ring-2 focus:ring-cyber-neon/30 transition-all">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">Presupuesto Inicial</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectBudget(800)" id="budget-800" class="budget-btn glass rounded-xl py-3 px-2 text-center transition-all hover:border-cyber-accent border border-transparent">
+                                <div class="text-cyber-accent font-bold text-lg">$800M</div>
+                                <div class="text-xs text-gray-400">Difícil</div>
+                            </button>
+                            <button onclick="selectBudget(1000)" id="budget-1000" class="budget-btn glass rounded-xl py-3 px-2 text-center transition-all border-2 border-cyber-neon bg-cyber-neon/10">
+                                <div class="text-cyber-neon font-bold text-lg">$1.000M</div>
+                                <div class="text-xs text-gray-400">Estándar</div>
+                            </button>
+                            <button onclick="selectBudget(1500)" id="budget-1500" class="budget-btn glass rounded-xl py-3 px-2 text-center transition-all hover:border-cyber-gold border border-transparent">
+                                <div class="text-cyber-gold font-bold text-lg">$1.500M</div>
+                                <div class="text-xs text-gray-400">Galáctico</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-strong rounded-2xl p-6 md:p-8 mb-8 neon-border animate-slide-up">
+                <h2 class="font-montserrat text-xl font-bold mb-6 flex items-center gap-3">
+                    <i class="fas fa-robot text-cyber-purple"></i> Dificultad de los Bots (solo Subasta)
+                </h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <button onclick="selectDifficulty('amateur')" id="diff-amateur" class="diff-btn glass rounded-xl p-5 text-left transition-all hover:border-green-400 border border-transparent">
+                        <div class="flex items-center gap-3 mb-2"><i class="fas fa-seedling text-green-400 text-xl"></i><span class="font-bold text-lg">Amateur</span></div>
+                        <p class="text-sm text-gray-400">Bots conservadores.</p>
+                    </button>
+                    <button onclick="selectDifficulty('profesional')" id="diff-profesional" class="diff-btn glass rounded-xl p-5 text-left transition-all border-2 border-cyber-neon bg-cyber-neon/10">
+                        <div class="flex items-center gap-3 mb-2"><i class="fas fa-brain text-cyber-neon text-xl"></i><span class="font-bold text-lg">Profesional</span></div>
+                        <p class="text-sm text-gray-400">Equilibrados y competitivos.</p>
+                    </button>
+                    <button onclick="selectDifficulty('leyenda')" id="diff-leyenda" class="diff-btn glass rounded-xl p-5 text-left transition-all hover:border-cyber-accent border border-transparent">
+                        <div class="flex items-center gap-3 mb-2"><i class="fas fa-fire text-cyber-accent text-xl"></i><span class="font-bold text-lg">Leyenda</span></div>
+                        <p class="text-sm text-gray-400">Agresivos y brutales.</p>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 animate-slide-up">
+                <button onclick="startMode('auction')" class="btn-cyber group relative overflow-hidden rounded-2xl p-6 sm:p-7 glass-strong neon-border hover:scale-[1.02] transition-all duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyber-neon/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-cyber-neon/20 flex items-center justify-center"><i class="fas fa-gavel text-xl text-cyber-neon"></i></div>
+                            <div class="text-left">
+                                <h3 class="font-montserrat text-lg font-bold">Subasta</h3>
+                                <p class="text-xs text-gray-400">Misteriosa + Copa</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 text-left">10 rondas a ciegas vs bots. Formación + eliminatorias.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyber-neon text-sm font-semibold"><span>JUGAR</span><i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i></div>
+                    </div>
+                </button>
+
+                <button onclick="startMode('impostor')" class="btn-cyber group relative overflow-hidden rounded-2xl p-6 sm:p-7 glass-strong border border-cyber-purple/40 hover:scale-[1.02] transition-all duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyber-purple/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-cyber-purple/20 flex items-center justify-center"><i class="fas fa-user-secret text-xl text-cyber-purple"></i></div>
+                            <div class="text-left">
+                                <h3 class="font-montserrat text-lg font-bold">Impostor</h3>
+                                <p class="text-xs text-gray-400">Con amigos</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 text-left">Roles secretos, debate y votación. Pásame el móvil.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyber-purple text-sm font-semibold"><span>JUGAR</span><i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i></div>
+                    </div>
+                </button>
+
+                <button onclick="startMode('draft')" class="btn-cyber group relative overflow-hidden rounded-2xl p-6 sm:p-7 glass-strong border border-cyber-gold/40 hover:scale-[1.02] transition-all duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyber-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-cyber-gold/20 flex items-center justify-center"><i class="fas fa-list-ol text-xl text-cyber-gold"></i></div>
+                            <div class="text-left">
+                                <h3 class="font-montserrat text-lg font-bold">Draft</h3>
+                                <p class="text-xs text-gray-400">Fantasy · Snake</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-300 text-left">Elige por turnos. Amigos + bots. Arma tu tridente 1-2-2-1.</p>
+                        <div class="mt-3 flex items-center gap-2 text-cyber-gold text-sm font-semibold"><span>JUGAR</span><i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform"></i></div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="mt-10 text-center text-gray-500 text-sm">
+                <p><i class="fas fa-database mr-2"></i>+130 jugadores • Ratings 80-91 • 3 modos de juego</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODO SUBASTA ==================== -->
+    <div id="auction-screen" class="hidden-screen min-h-screen pb-8">
+        <!-- Top bar móvil-friendly -->
+        <div class="sticky top-0 z-40 glass-strong border-b border-cyber-neon/20 px-3 py-2.5">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                    <button onclick="confirmExit()" class="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-1"><i class="fas fa-arrow-left text-lg"></i></button>
+                    <div class="min-w-0">
+                        <h2 class="font-montserrat font-bold text-sm sm:text-lg truncate"><span id="display-manager-name">DT Táctico</span></h2>
+                        <p class="text-[10px] sm:text-xs text-gray-400">Ronda <span id="current-round">1</span>/10</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 sm:gap-5 flex-shrink-0">
+                    <div class="text-right">
+                        <p class="text-[10px] sm:text-xs text-gray-400">Presupuesto</p>
+                        <p class="font-bold text-cyber-neon text-sm sm:text-lg">$<span id="current-budget">1000</span>M</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] sm:text-xs text-gray-400">Plantilla</p>
+                        <p class="font-bold text-white text-sm sm:text-base"><span id="squad-count">0</span>/6</p>
+                    </div>
+                    <!-- Timer siempre visible (también en móvil) -->
+                    <div class="w-11 h-11 sm:w-14 sm:h-14 relative flex-shrink-0">
+                        <svg class="w-full h-full -rotate-90">
+                            <circle cx="50%" cy="50%" r="18" stroke="#1a1a2e" stroke-width="3" fill="none" class="sm:hidden"/>
+                            <circle id="timer-circle-mobile" class="timer-ring sm:hidden" cx="50%" cy="50%" r="18" stroke="#00f5d4" stroke-width="3" fill="none" stroke-dasharray="113.1" stroke-dashoffset="0" stroke-linecap="round"/>
+                            <circle cx="28" cy="28" r="24" stroke="#1a1a2e" stroke-width="4" fill="none" class="hidden sm:block"/>
+                            <circle id="timer-circle" class="timer-ring hidden sm:block" cx="28" cy="28" r="24" stroke="#00f5d4" stroke-width="4" fill="none" stroke-dasharray="150.8" stroke-dashoffset="0" stroke-linecap="round"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center"><span id="timer-text" class="font-bold text-sm sm:text-lg">12</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 grid lg:grid-cols-3 gap-4 sm:gap-6">
+            <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+                <div id="mystery-card" class="glass-strong rounded-2xl p-4 sm:p-6 md:p-8 neon-border relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-cyber-neon/5 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <!-- Posición + Puja: apilados en móvil, lado a lado en desktop -->
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyber-800 border border-cyber-neon/30 text-xs sm:text-sm mb-2">
+                                <i class="fas fa-eye-slash text-cyber-neon"></i><span>JUGADOR MISTERIOSO</span>
+                            </div>
+                            <h3 class="font-montserrat text-3xl sm:text-2xl md:text-3xl font-black"><span id="mystery-position" class="text-cyber-neon">???</span></h3>
+                        </div>
+                        <!-- Puja actual: bloque completo y visible en móvil -->
+                        <div class="w-full sm:w-auto bg-cyber-800/70 rounded-xl px-4 py-3 sm:bg-transparent sm:p-0 sm:text-right border border-cyber-gold/20 sm:border-0">
+                            <p class="text-xs text-gray-400 mb-0.5">Puja actual</p>
+                            <p class="text-2xl sm:text-3xl font-black text-cyber-gold">$<span id="current-bid">0</span>M</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Líder: <span id="bid-leader" class="text-white font-medium">Nadie</span></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-cyber-800/60 rounded-xl p-3.5 sm:p-5 border border-cyber-purple/30 mb-4 sm:mb-6">
+                        <div class="flex items-start gap-2.5">
+                            <i class="fas fa-quote-left text-cyber-purple text-base sm:text-xl mt-0.5 flex-shrink-0"></i>
+                            <p id="mystery-clue" class="text-sm sm:text-lg text-gray-200 italic leading-relaxed">"Cargando pista..."</p>
+                        </div>
+                    </div>
+
+                    <div id="bid-controls" class="space-y-3 sm:space-y-4">
+                        <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+                            <button onclick="placeBid(10)" class="btn-cyber glass rounded-xl py-3.5 sm:py-3 font-bold text-sm sm:text-base hover:bg-cyber-neon/20 hover:border-cyber-neon border border-transparent transition-all active:scale-95">+$10M</button>
+                            <button onclick="placeBid(25)" class="btn-cyber glass rounded-xl py-3.5 sm:py-3 font-bold text-sm sm:text-base hover:bg-cyber-neon/20 hover:border-cyber-neon border border-transparent transition-all active:scale-95">+$25M</button>
+                            <button onclick="placeBid(50)" class="btn-cyber glass rounded-xl py-3.5 sm:py-3 font-bold text-sm sm:text-base hover:bg-cyber-blue/20 hover:border-cyber-blue border border-transparent transition-all active:scale-95">+$50M</button>
+                            <button onclick="placeBid(100)" class="btn-cyber glass rounded-xl py-3.5 sm:py-3 font-bold text-sm sm:text-base hover:bg-cyber-accent/20 hover:border-cyber-accent border border-transparent transition-all active:scale-95">+$100M</button>
+                        </div>
+                        <div class="flex gap-2 sm:gap-3">
+                            <input type="number" id="custom-bid" placeholder="Monto..." min="1" inputmode="numeric"
+                                class="flex-1 min-w-0 bg-cyber-800 border border-cyber-neon/30 rounded-xl px-3 sm:px-4 py-3.5 sm:py-3 text-sm sm:text-base focus:outline-none focus:border-cyber-neon transition-all">
+                            <button onclick="placeCustomBid()" class="btn-cyber bg-cyber-neon text-cyber-900 font-bold px-5 sm:px-6 rounded-xl hover:bg-white transition-all active:scale-95 flex-shrink-0">PUJAR</button>
+                        </div>
+                        <button onclick="passRound()" class="w-full glass rounded-xl py-3 text-gray-400 hover:text-white hover:border-gray-500 border border-transparent transition-all text-sm sm:text-base"><i class="fas fa-forward mr-2"></i>Pasar esta ronda</button>
+                    </div>
+                    <div id="round-result" class="hidden mt-4 sm:mt-6 p-4 sm:p-5 rounded-xl text-center"></div>
+                </div>
+                <div class="glass rounded-2xl p-4 sm:p-5">
+                    <h4 class="font-bold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base"><i class="fas fa-comments text-cyber-blue"></i> Chat de la Sala</h4>
+                    <div id="auction-chat" class="h-36 sm:h-48 overflow-y-auto space-y-2 sm:space-y-3 pr-1 sm:pr-2 text-sm"></div>
+                </div>
+            </div>
+            <div class="space-y-4 sm:space-y-6">
+                <div class="glass-strong rounded-2xl p-4 sm:p-5 neon-border">
+                    <h4 class="font-bold mb-3 sm:mb-4 flex items-center justify-between text-sm sm:text-base">
+                        <span><i class="fas fa-users text-cyber-neon mr-2"></i>Mi Tridente</span>
+                        <span class="text-[10px] sm:text-xs text-gray-400">1 POR · 2 DEF · 2 MED · 1 DEL</span>
+                    </h4>
+                    <div id="my-squad" class="space-y-2 min-h-[120px] sm:min-h-[180px]"><p class="text-gray-500 text-sm text-center py-6 sm:py-8">Aún no tienes jugadores</p></div>
+                    <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-white/10 flex justify-between text-sm">
+                        <span class="text-gray-400">Valor total</span>
+                        <span class="font-bold text-cyber-gold">$<span id="squad-value">0</span>M</span>
+                    </div>
+                    <div class="flex justify-between text-sm mt-1">
+                        <span class="text-gray-400">Puntos rating</span>
+                        <span class="font-bold text-cyber-neon"><span id="squad-rating">0</span></span>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-4 sm:p-5">
+                    <h4 class="font-bold mb-3 sm:mb-4 text-sm sm:text-base"><i class="fas fa-robot text-cyber-purple mr-2"></i>Rivales IA</h4>
+                    <div id="bots-status" class="space-y-2 sm:space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TORNEO / MATCH / CAMPEÓN (igual estructura) -->
+    <div id="tournament-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-10">
+                <h1 class="font-montserrat text-4xl font-black mb-2"><span class="text-cyber-gold">¡REVELACIÓN!</span></h1>
+                <p class="text-gray-400">Las identidades de los jugadores han sido reveladas</p>
+            </div>
+            <div id="revealed-squads" class="grid md:grid-cols-2 gap-6 mb-10"></div>
+            <div class="glass-strong rounded-2xl p-6 md:p-8 neon-border mb-8">
+                <h2 class="font-montserrat text-2xl font-bold mb-6 text-center"><i class="fas fa-trophy text-cyber-gold mr-2"></i>COPA TORNEO - ELIMINATORIAS</h2>
+                <div id="bracket" class="space-y-8"></div>
+            </div>
+            <div class="text-center">
+                <button onclick="startTournamentSimulation()" id="btn-start-tournament" class="btn-cyber bg-gradient-to-r from-cyber-gold to-yellow-500 text-cyber-900 font-bold text-lg px-10 py-4 rounded-xl hover:scale-105 transition-all">
+                    <i class="fas fa-play mr-2"></i>INICIAR SIMULACIÓN DE PARTIDOS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="match-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="glass-strong rounded-2xl p-6 md:p-8 neon-border">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="text-center flex-1">
+                        <p id="match-team1" class="font-bold text-xl mb-1">Equipo 1</p>
+                        <p id="match-score1" class="text-5xl font-black text-cyber-neon">0</p>
+                    </div>
+                    <div class="px-6">
+                        <div class="text-2xl font-bold text-gray-500">VS</div>
+                        <div id="match-minute" class="text-sm text-gray-400 mt-1 text-center">0'</div>
+                    </div>
+                    <div class="text-center flex-1">
+                        <p id="match-team2" class="font-bold text-xl mb-1">Equipo 2</p>
+                        <p id="match-score2" class="text-5xl font-black text-cyber-accent">0</p>
+                    </div>
+                </div>
+                <div id="match-commentary" class="h-64 overflow-y-auto bg-cyber-800/50 rounded-xl p-4 space-y-2 mb-6"></div>
+                <div id="match-result-area" class="hidden text-center">
+                    <h3 id="match-winner-text" class="text-2xl font-bold mb-4"></h3>
+                    <button onclick="nextTournamentMatch()" id="btn-next-match" class="btn-cyber bg-cyber-neon text-cyber-900 font-bold px-8 py-3 rounded-xl">Siguiente partido →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="champion-screen" class="hidden-screen min-h-screen flex items-center justify-center py-8 px-4">
+        <div class="max-w-2xl mx-auto text-center">
+            <div class="mb-8 animate-float"><i class="fas fa-trophy text-8xl text-cyber-gold"></i></div>
+            <h1 class="font-montserrat text-5xl font-black mb-4 neon-text">¡CAMPEÓN!</h1>
+            <p id="champion-name" class="text-3xl font-bold text-cyber-gold mb-2">DT Táctico</p>
+            <p class="text-gray-400 mb-8">Ha conquistado la Copa Torneo</p>
+            <div id="champion-squad" class="glass-strong rounded-2xl p-6 mb-8 text-left"></div>
+            <button onclick="returnToLobby()" class="btn-cyber bg-cyber-neon text-cyber-900 font-bold text-lg px-10 py-4 rounded-xl hover:scale-105 transition-all">
+                <i class="fas fa-home mr-2"></i>VOLVER AL LOBBY
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MODO IMPOSTOR MULTIJUGADOR (CON AMIGOS) ==================== -->
+    
+    <!-- Setup: configurar partida -->
+    <div id="impostor-setup-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-lg mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="returnToLobby()" class="text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-xl"></i></button>
+                <h1 class="font-montserrat text-xl font-bold"><i class="fas fa-user-secret text-cyber-purple mr-2"></i>Impostor · Con Amigos</h1>
+                <div class="w-8"></div>
+            </div>
+
+            <div class="glass-strong rounded-2xl p-6 neon-border mb-6">
+                <h2 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-users text-cyber-neon"></i> Configurar partida</h2>
+                
+                <div class="mb-5">
+                    <label class="block text-sm text-gray-400 mb-2">Número de jugadores (3-10)</label>
+                    <div class="flex items-center gap-4">
+                        <button onclick="changePlayerCount(-1)" class="w-12 h-12 rounded-xl glass text-xl font-bold hover:bg-white/10">−</button>
+                        <span id="player-count-display" class="text-3xl font-black text-cyber-neon w-12 text-center">5</span>
+                        <button onclick="changePlayerCount(1)" class="w-12 h-12 rounded-xl glass text-xl font-bold hover:bg-white/10">+</button>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm text-gray-400 mb-2">Número de Impostores</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="setImpostorCount(1)" id="imp-count-1" class="imp-count-btn glass rounded-xl py-3 font-bold border-2 border-cyber-accent bg-cyber-accent/20">1 Impostor</button>
+                        <button onclick="setImpostorCount(2)" id="imp-count-2" class="imp-count-btn glass rounded-xl py-3 font-bold border border-transparent hover:border-cyber-purple">2 Impostores</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Con 6+ jugadores se recomienda 2 impostores</p>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm text-gray-400 mb-2">Modalidad de cartas</label>
+                    <div class="grid grid-cols-1 gap-3">
+                        <button onclick="setCardMode('shared')" id="mode-shared" class="card-mode-btn glass rounded-xl p-4 text-left border-2 border-cyber-neon bg-cyber-neon/10 transition-all">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="fas fa-clone text-cyber-neon"></i>
+                                <span class="font-bold">Misma carta</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-cyber-neon/20 text-cyber-neon">Tu modo</span>
+                            </div>
+                            <p class="text-xs text-gray-400">Todos los leales ven el <strong>mismo jugador</strong>. Los impostores ven datos falsos. Ideal para detectar contradicciones rápido.</p>
+                        </button>
+                        <button onclick="setCardMode('unique')" id="mode-unique" class="card-mode-btn glass rounded-xl p-4 text-left border border-transparent hover:border-cyber-purple transition-all">
+                            <div class="flex items-center gap-2 mb-1">
+                                <i class="fas fa-layer-group text-cyber-purple"></i>
+                                <span class="font-bold">Cartas distintas</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-cyber-purple/20 text-cyber-purple">Modo original</span>
+                            </div>
+                            <p class="text-xs text-gray-400">Cada jugador tiene su <strong>propia carta</strong>. Los leales ven datos reales de la suya; los impostores ven datos alterados. Más difícil de pillar.</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-400 mb-2">Nombres de los jugadores</label>
+                    <div id="player-names-list" class="space-y-2"></div>
+                </div>
+
+                <button onclick="startImpostorGame()" class="w-full btn-cyber bg-cyber-purple text-white font-bold text-lg py-4 rounded-xl hover:scale-[1.02] transition-all">
+                    <i class="fas fa-play mr-2"></i>EMPEZAR PARTIDA
+                </button>
+            </div>
+
+            <div class="glass rounded-2xl p-5 text-sm text-gray-400">
+                <p class="font-bold text-white mb-2"><i class="fas fa-info-circle text-cyber-neon mr-2"></i>Cómo se juega</p>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li>Cada jugador mira su rol en secreto (pásame el móvil).</li>
+                    <li>Según la modalidad, los leales ven la misma carta o cada uno la suya.</li>
+                    <li>Los <span class="text-cyber-accent">Impostores</span> tienen datos falsos y deben disimular.</li>
+                    <li>Debate en voz alta → Votación secreta.</li>
+                    <li>¡El que acierte quién es el impostor gana!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODO DRAFT (independiente) ==================== -->
+    <!-- FUT DRAFT clásico (estilo FC 26): formación + 5 opciones por posición -->
+    <div id="draft-setup-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-lg mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="returnToLobby()" class="text-gray-400 hover:text-white"><i class="fas fa-arrow-left text-xl"></i></button>
+                <h1 class="font-montserrat text-xl font-bold"><i class="fas fa-list-ol text-cyber-gold mr-2"></i>FUT Draft</h1>
+                <div class="w-8"></div>
+            </div>
+
+            <div class="glass-strong rounded-2xl p-6 neon-border mb-6">
+                <h2 class="font-bold text-lg mb-4">1. Elige formación</h2>
+                <div class="grid grid-cols-2 gap-3 mb-6" id="formation-buttons">
+                    <button onclick="selectFormation('4231')" id="form-4231" class="form-btn glass rounded-xl p-4 text-center border-2 border-cyber-gold bg-cyber-gold/10">
+                        <p class="font-black text-xl text-cyber-gold">4-2-3-1</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Clásica · Ofensiva</p>
+                    </button>
+                    <button onclick="selectFormation('433')" id="form-433" class="form-btn glass rounded-xl p-4 text-center border border-transparent hover:border-cyber-gold">
+                        <p class="font-black text-xl">4-3-3</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Equilibrada</p>
+                    </button>
+                    <button onclick="selectFormation('442')" id="form-442" class="form-btn glass rounded-xl p-4 text-center border border-transparent hover:border-cyber-gold">
+                        <p class="font-black text-xl">4-4-2</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Clásica</p>
+                    </button>
+                    <button onclick="selectFormation('352')" id="form-352" class="form-btn glass rounded-xl p-4 text-center border border-transparent hover:border-cyber-gold">
+                        <p class="font-black text-xl">3-5-2</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Mediocampo</p>
+                    </button>
+                </div>
+
+                <div class="bg-cyber-800/50 rounded-xl p-4 mb-5 text-sm text-gray-300">
+                    <p class="font-bold text-cyber-gold mb-1"><i class="fas fa-gamepad mr-1"></i> Como en FC 26</p>
+                    <p>Posición por posición te salen <strong>5 jugadores</strong>. Eliges 1.</p>
+                    <p class="text-xs text-gray-500 mt-1">11 titulares + 5 suplentes · Cancha · Valoración · Química</p>
+                </div>
+
+                <button onclick="startFutDraft()" class="w-full btn-cyber bg-cyber-gold text-cyber-900 font-bold text-lg py-4 rounded-xl">
+                    <i class="fas fa-play mr-2"></i>EMPEZAR FUT DRAFT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="draft-live-screen" class="hidden-screen min-h-screen py-4 px-3 sm:px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-4">
+                <p class="text-xs text-gray-400 mb-1">Eligiendo para</p>
+                <h2 id="draft-slot-label" class="font-montserrat text-2xl font-black text-cyber-gold">POR</h2>
+                <p id="draft-slot-progress" class="text-xs text-gray-500 mt-1">1 / 16</p>
+                <div class="w-full max-w-xs mx-auto h-1.5 bg-cyber-800 rounded-full mt-2 overflow-hidden">
+                    <div id="draft-progress-bar" class="h-full bg-cyber-gold rounded-full transition-all" style="width:6%"></div>
+                </div>
+            </div>
+
+            <p class="text-center text-sm text-gray-400 mb-3">Elige <strong class="text-white">1 de 5</strong></p>
+            <div id="draft-choices" class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-6"></div>
+
+            <!-- Mini cancha de progreso -->
+            <div class="relative rounded-xl overflow-hidden border border-white/10 mx-auto" style="background: linear-gradient(180deg,#1a472a,#0d2818); height: 180px; max-width: 280px;">
+                <div id="draft-mini-pitch" class="absolute inset-0"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="draft-result-screen" class="hidden-screen min-h-screen py-6 px-3 sm:px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-4">
+                <i class="fas fa-trophy text-4xl text-cyber-gold mb-2"></i>
+                <h1 class="font-montserrat text-2xl font-black mb-1">¡Draft completo!</h1>
+                <p id="fut-formation-label" class="text-gray-400 text-sm">Formación 4-2-3-1</p>
+            </div>
+
+            <div class="flex justify-center gap-8 mb-4">
+                <div class="text-center">
+                    <p class="text-xs text-gray-400">Valoración</p>
+                    <p id="fut-ovr" class="text-5xl font-black text-white">0</p>
+                    <div id="fut-stars" class="text-cyber-gold text-sm">★★★★★</div>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-400">Química</p>
+                    <p id="fut-chem" class="text-5xl font-black text-cyber-neon">0</p>
+                    <div class="w-28 h-2 bg-cyber-800 rounded-full mt-1 mx-auto overflow-hidden">
+                        <div id="fut-chem-bar" class="h-full bg-cyber-neon rounded-full transition-all" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative rounded-2xl overflow-hidden mb-4 border border-white/10" style="background: linear-gradient(180deg, #1a472a 0%, #0d2818 50%, #1a472a 100%); aspect-ratio: 3/4; max-height: 540px;">
+                <div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px); background-size: 100% 12.5%;"></div>
+                <div class="absolute left-1/2 top-[8%] -translate-x-1/2 w-[40%] h-[12%] border border-white/20 rounded-b-lg"></div>
+                <div class="absolute left-1/2 bottom-[8%] -translate-x-1/2 w-[40%] h-[12%] border border-white/20 rounded-t-lg"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-white/15 rounded-full"></div>
+                <div id="fut-pitch" class="absolute inset-0"></div>
+            </div>
+
+            <div class="glass rounded-2xl p-4 mb-6">
+                <h3 class="font-bold text-sm mb-3 flex items-center gap-2"><i class="fas fa-chair text-cyber-gold"></i> Banco de suplentes</h3>
+                <div id="fut-bench" class="flex flex-wrap gap-2 justify-center min-h-[60px]"></div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="startFutDraft()" class="btn-cyber bg-cyber-gold text-cyber-900 font-bold py-3 px-6 rounded-xl">Otro draft</button>
+                <button onclick="returnToLobby()" class="btn-cyber glass font-bold py-3 px-6 rounded-xl">Lobby</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de "Pásame el móvil" / Reveal de rol -->
+    <div id="impostor-reveal-screen" class="hidden-screen min-h-screen flex items-center justify-center py-8 px-4">
+        <div class="max-w-md mx-auto w-full text-center">
+            <div id="reveal-pass-phase">
+                <div class="mb-8">
+                    <i class="fas fa-mobile-alt text-6xl text-cyber-purple mb-4 animate-float"></i>
+                    <h2 class="font-montserrat text-2xl font-bold mb-2">Pásale el móvil a</h2>
+                    <p id="reveal-player-name" class="text-4xl font-black text-cyber-neon mb-6">Jugador 1</p>
+                    <p class="text-gray-400 mb-8">Que nadie más mire la pantalla</p>
+                </div>
+                <button onclick="showPlayerRole()" class="w-full btn-cyber bg-cyber-neon text-cyber-900 font-bold text-lg py-4 rounded-xl">
+                    Soy <span id="reveal-player-name-btn">Jugador 1</span> · Ver mi rol
+                </button>
+            </div>
+
+            <div id="reveal-role-phase" class="hidden">
+                <div id="role-card" class="rounded-2xl p-8 mb-6">
+                    <p class="text-sm text-gray-400 mb-2">TU ROL SECRETO</p>
+                    <h2 id="role-title" class="font-montserrat text-3xl font-black mb-3">...</h2>
+                    <p id="role-desc" class="text-gray-300 mb-6"></p>
+                    <div id="role-player-card" class="bg-black/30 rounded-xl p-5 text-left"></div>
+                </div>
+                <button onclick="nextPlayerReveal()" class="w-full btn-cyber bg-cyber-800 border border-white/20 font-bold text-lg py-4 rounded-xl hover:bg-white/10">
+                    Ya lo vi · Siguiente jugador
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fase de discusión -->
+    <div id="impostor-discuss-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-lg mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="font-montserrat text-2xl font-bold mb-2"><i class="fas fa-comments text-cyber-blue mr-2"></i>Fase de Debate</h1>
+                <p class="text-gray-400">Discutid en voz alta. ¿Quién tiene pistas contradictorias?</p>
+            </div>
+
+            <div class="glass-strong rounded-2xl p-6 neon-border mb-6 text-center">
+                <p class="text-sm text-gray-400 mb-2">Tiempo de discusión</p>
+                <p id="discuss-timer" class="text-5xl font-black text-cyber-neon">2:00</p>
+                <div class="mt-4 flex justify-center gap-3">
+                    <button onclick="adjustDiscussTime(-30)" class="px-4 py-2 rounded-lg glass text-sm">−30s</button>
+                    <button onclick="adjustDiscussTime(30)" class="px-4 py-2 rounded-lg glass text-sm">+30s</button>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-5 mb-6">
+                <h3 class="font-bold mb-3 text-sm text-gray-400">Jugadores en la sala</h3>
+                <div id="discuss-players-list" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="glass rounded-2xl p-5 mb-6 text-sm text-gray-400">
+                <p class="font-bold text-white mb-2">Recordatorio</p>
+                <ul class="space-y-1">
+                    <li>• Los <span class="text-cyber-neon">Leales</span> comparten la misma carta real (nombre, posición, rating, pista).</li>
+                    <li>• Los <span class="text-cyber-accent">Impostores</span> no tienen ninguna pista: deben inventar o callar.</li>
+                    <li>• Preguntad detalles del jugador. Quien dude o se equivoque es sospechoso.</li>
+                    <li>• Tras la votación se elimina al más votado y el juego continúa.</li>
+                </ul>
+            </div>
+
+            <button onclick="startVotingPhase()" class="w-full btn-cyber bg-cyber-gold text-cyber-900 font-bold text-lg py-4 rounded-xl">
+                <i class="fas fa-vote-yea mr-2"></i>IR A LA VOTACIÓN
+            </button>
+        </div>
+    </div>
+
+    <!-- Fase de votación (cada jugador vota en secreto) -->
+    <div id="impostor-vote-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-lg mx-auto">
+            <div id="vote-pass-phase">
+                <div class="text-center mb-8">
+                    <i class="fas fa-vote-yea text-5xl text-cyber-gold mb-4"></i>
+                    <h2 class="font-montserrat text-2xl font-bold mb-2">Votación secreta</h2>
+                    <p class="text-gray-400 mb-2">Pásale el móvil a</p>
+                    <p id="vote-player-name" class="text-3xl font-black text-cyber-neon">Jugador 1</p>
+                </div>
+                <button onclick="showVoteOptions()" class="w-full btn-cyber bg-cyber-neon text-cyber-900 font-bold text-lg py-4 rounded-xl">
+                    Soy <span id="vote-player-name-btn">Jugador 1</span> · Votar
+                </button>
+            </div>
+
+            <div id="vote-options-phase" class="hidden">
+                <div class="text-center mb-6">
+                    <p class="text-gray-400 mb-1">Votando como</p>
+                    <p id="voting-as-name" class="text-xl font-bold text-cyber-neon"></p>
+                    <p class="text-sm text-gray-500 mt-2">¿Quién crees que es el Impostor?</p>
+                </div>
+                <div id="vote-buttons" class="space-y-3 mb-6"></div>
+                <button onclick="skipVote()" class="w-full glass rounded-xl py-3 text-gray-400 text-sm">Saltar (no votar)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="impostor-result-screen" class="hidden-screen min-h-screen py-8 px-4">
+        <div class="max-w-lg mx-auto text-center">
+            <div id="result-content" class="mb-8"></div>
+            <div id="result-roles" class="glass-strong rounded-2xl p-6 mb-8 text-left"></div>
+            <div class="flex flex-col gap-3">
+                <button onclick="restartImpostor()" class="btn-cyber bg-cyber-purple text-white font-bold py-4 rounded-xl">
+                    <i class="fas fa-redo mr-2"></i>Otra partida con los mismos
+                </button>
+                <button onclick="returnToLobby()" class="btn-cyber glass font-bold py-4 rounded-xl">
+                    <i class="fas fa-home mr-2"></i>Volver al Lobby
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal salida -->
+    <div id="exit-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="glass-strong rounded-2xl p-8 max-w-md mx-4 text-center neon-border">
+            <i class="fas fa-exclamation-triangle text-4xl text-cyber-gold mb-4"></i>
+            <h3 class="font-bold text-xl mb-2">¿Abandonar partida?</h3>
+            <p class="text-gray-400 mb-6">Perderás todo el progreso actual.</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="closeExitModal()" class="px-6 py-3 rounded-xl glass hover:bg-white/10 transition-all">Cancelar</button>
+                <button onclick="returnToLobby()" class="px-6 py-3 rounded-xl bg-cyber-accent text-white font-bold hover:bg-red-600 transition-all">Abandonar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // BASE DE DATOS DE JUGADORES (85)
+    // ============================================================
+    const PLAYERS_DB = [
+        { id:1, name:"Thibaut Courtois", pos:"POR", rating:90, price:85, clue:"El belga de 2 metros que atajó un penal decisivo en el minuto 123 de una final del mundo." },
+        { id:2, name:"Alisson Becker", pos:"POR", rating:89, price:80, clue:"El brasileño que salva con los pies como si fueran manos y grita 'Vamos' en cada jugada." },
+        { id:3, name:"Ederson Moraes", pos:"POR", rating:88, price:75, clue:"El arquero que juega como un líbero y reparte pases de 60 metros con precisión quirúrgica." },
+        { id:4, name:"Jan Oblak", pos:"POR", rating:89, price:78, clue:"El esloveno silencioso que parece un muro impenetrable bajo los tres palos del Atlético." },
+        { id:5, name:"Gianluigi Donnarumma", pos:"POR", rating:88, price:72, clue:"El gigante italiano que detuvo los penales de la final de la Eurocopa en Wembley." },
+        { id:6, name:"Mike Maignan", pos:"POR", rating:87, price:65, clue:"El francés elegante del Milan que combina reflejos felinos con salida de balón de mediocampista." },
+        { id:7, name:"Emiliano Martínez", pos:"POR", rating:88, price:70, clue:"El 'Dibu' que se convirtió en héroe mundial con atajadas y provocaciones en Qatar." },
+        { id:8, name:"Marc-André ter Stegen", pos:"POR", rating:88, price:68, clue:"El alemán del Barça que se ha convertido en uno de los mejores con los pies del planeta." },
+        { id:9, name:"Virgil van Dijk", pos:"DEF", rating:89, price:90, clue:"El coloso holandés que parece un faro en la defensa y gana prácticamente todos los duelos aéreos." },
+        { id:10, name:"Rúben Dias", pos:"DEF", rating:88, price:85, clue:"El portugués que llegó a Manchester y transformó una defensa permeable en un muro de acero." },
+        { id:11, name:"William Saliba", pos:"DEF", rating:87, price:80, clue:"El joven francés elegante del Arsenal que combina físico imponente con una salida de balón de seda." },
+        { id:12, name:"Antonio Rüdiger", pos:"DEF", rating:87, price:75, clue:"El alemán intenso del Real Madrid que celebra los despejes como si fueran goles." },
+        { id:13, name:"Joško Gvardiol", pos:"DEF", rating:86, price:78, clue:"El croata versátil que puede jugar de central o lateral y ya brilló en un Mundial siendo muy joven." },
+        { id:14, name:"Gabriel Magalhães", pos:"DEF", rating:86, price:70, clue:"El brasileño del Arsenal que marca goles de cabeza en momentos clave y lidera la zaga." },
+        { id:15, name:"Marquinhos", pos:"DEF", rating:87, price:72, clue:"El capitán brasileño del PSG que ha ganado casi todo a nivel de clubes excepto la Champions." },
+        { id:16, name:"Theo Hernández", pos:"DEF", rating:86, price:68, clue:"El lateral izquierdo francés del Milan que ataca como un extremo y deja rivales en el camino." },
+        { id:17, name:"Achraf Hakimi", pos:"DEF", rating:86, price:70, clue:"El lateral marroquí ultraveloz del PSG que fue revelación en el Mundial de Qatar." },
+        { id:18, name:"Trent Alexander-Arnold", pos:"DEF", rating:86, price:75, clue:"El lateral derecho inglés que reparte asistencias como un '10' desde la banda del Liverpool." },
+        { id:19, name:"Kyle Walker", pos:"DEF", rating:85, price:55, clue:"El lateral inglés que sigue siendo uno de los más rápidos del mundo a pesar de los años." },
+        { id:20, name:"Jules Koundé", pos:"DEF", rating:85, price:65, clue:"El francés del Barça que puede jugar de central o lateral derecho con la misma elegancia." },
+        { id:21, name:"Éder Militão", pos:"DEF", rating:86, price:70, clue:"El brasileño del Real Madrid que combina velocidad, anticipación y gran juego aéreo." },
+        { id:22, name:"Alessandro Bastoni", pos:"DEF", rating:86, price:68, clue:"El central italiano del Inter que construye el juego desde atrás con precisión de mediocampista." },
+        { id:23, name:"Kim Min-jae", pos:"DEF", rating:85, price:62, clue:"El central surcoreano del Bayern que destaca por su anticipación y contundencia física." },
+        { id:24, name:"Ronald Araújo", pos:"DEF", rating:86, price:72, clue:"El uruguayo del Barça que es un muro físico y puede tapar cualquier incendio defensivo." },
+        { id:25, name:"Kevin De Bruyne", pos:"MED", rating:91, price:95, clue:"El belga visionario que ve pases que nadie más ve y lidera el mediocampo de los Citizens." },
+        { id:26, name:"Rodri Hernández", pos:"MED", rating:91, price:100, clue:"El español que ganó el Balón de Oro y controla el ritmo de cada partido como un director de orquesta." },
+        { id:27, name:"Jude Bellingham", pos:"MED", rating:90, price:120, clue:"El inglés que llegó a Madrid y se convirtió en goleador nato desde el mediocampo." },
+        { id:28, name:"Pedri González", pos:"MED", rating:87, price:85, clue:"El canario del Barça que parece tocar el balón con seda y ya es titular indiscutible desde muy joven." },
+        { id:29, name:"Martin Ødegaard", pos:"MED", rating:88, price:90, clue:"El noruego capitán del Arsenal que combina visión, técnica y liderazgo silencioso." },
+        { id:30, name:"Bruno Fernandes", pos:"MED", rating:87, price:80, clue:"El portugués del United que siempre quiere la pelota y reparte goles y asistencias en cantidad." },
+        { id:31, name:"Federico Valverde", pos:"MED", rating:88, price:85, clue:"El uruguayo todoterreno del Real Madrid que corre más kilómetros que nadie y llega al área." },
+        { id:32, name:"Aurélien Tchouaméni", pos:"MED", rating:86, price:75, clue:"El francés del Madrid que recupera balones y distribuye con una elegancia sobria." },
+        { id:33, name:"Declan Rice", pos:"MED", rating:87, price:90, clue:"El inglés del Arsenal que es un seguro defensivo y cada vez aporta más en ataque." },
+        { id:34, name:"Nicolò Barella", pos:"MED", rating:87, price:78, clue:"El italiano del Inter que no para de correr, presionar y conectar el juego con intensidad." },
+        { id:35, name:"Jamal Musiala", pos:"MED", rating:87, price:95, clue:"El 'Bambi' alemán del Bayern que dribla en espacios reducidos como si el balón estuviera pegado." },
+        { id:36, name:"Florian Wirtz", pos:"MED", rating:88, price:110, clue:"La joya alemana del Leverkusen que fue clave en un título histórico de Bundesliga." },
+        { id:37, name:"Gavi", pos:"MED", rating:85, price:70, clue:"El joven español del Barça que compite como un veterano y no le tiene miedo a nadie." },
+        { id:38, name:"Frenkie de Jong", pos:"MED", rating:86, price:75, clue:"El holandés del Barça que conduce el balón con una tranquilidad que desespera a los rivales." },
+        { id:39, name:"Joshua Kimmich", pos:"MED", rating:86, price:70, clue:"El alemán versátil del Bayern que puede jugar de lateral o de pivote con el mismo nivel." },
+        { id:40, name:"Bernardo Silva", pos:"MED", rating:87, price:75, clue:"El portugués pequeño pero genial del City que siempre encuentra soluciones en espacios mínimos." },
+        { id:41, name:"İlkay Gündoğan", pos:"MED", rating:85, price:55, clue:"El alemán inteligente que marcó goles decisivos en finales y ahora brilla en el Barça." },
+        { id:42, name:"Alexis Mac Allister", pos:"MED", rating:85, price:65, clue:"El argentino del Liverpool que fue campeón del mundo y aporta equilibrio y llegada." },
+        { id:43, name:"Enzo Fernández", pos:"MED", rating:85, price:70, clue:"El argentino del Chelsea que se consagró en Qatar y destaca por su visión y pase." },
+        { id:44, name:"Khvicha Kvaratskhelia", pos:"MED", rating:86, price:80, clue:"El 'Kvaradona' georgiano del Napoli que enamora con su regate y ya ganó un scudetto." },
+        { id:45, name:"Erling Haaland", pos:"DEL", rating:91, price:150, clue:"El 'Androide' noruego rompe-récords que marca goles con una eficiencia casi robótica." },
+        { id:46, name:"Kylian Mbappé", pos:"DEL", rating:91, price:160, clue:"El francés ultraveloz que ya es leyenda y ahora viste de blanco en el Santiago Bernabéu." },
+        { id:47, name:"Vinícius Júnior", pos:"DEL", rating:90, price:140, clue:"El brasileño que se convirtió en el mejor del mundo en el uno contra uno y celebra con bailecitos." },
+        { id:48, name:"Harry Kane", pos:"DEL", rating:90, price:100, clue:"El inglés completo que combina gol, asistencia y juego de espaldas como pocos en la historia." },
+        { id:49, name:"Lautaro Martínez", pos:"DEL", rating:88, price:90, clue:"El 'Toro' argentino del Inter que pelea cada balón y marca goles decisivos en Europa." },
+        { id:50, name:"Robert Lewandowski", pos:"DEL", rating:88, price:70, clue:"El polaco histórico que sigue marcando goles a un ritmo impresionante con la camiseta blaugrana." },
+        { id:51, name:"Mohamed Salah", pos:"DEL", rating:88, price:85, clue:"El egipcio del Liverpool que es máquina de goles y asistencias desde la banda derecha." },
+        { id:52, name:"Lamine Yamal", pos:"DEL", rating:86, price:120, clue:"La joya española más joven de la historia que ya decidió una Eurocopa con 16 años." },
+        { id:53, name:"Bukayo Saka", pos:"DEL", rating:87, price:100, clue:"El inglés del Arsenal que es imparable por la derecha y se ha convertido en estrella absoluta." },
+        { id:54, name:"Phil Foden", pos:"DEL", rating:87, price:95, clue:"El 'Stockport Iniesta' del City que puede jugar en cualquier posición de ataque con maestría." },
+        { id:55, name:"Rodrygo Goes", pos:"DEL", rating:86, price:90, clue:"El brasileño del Madrid que siempre aparece en las noches europeas más importantes." },
+        { id:56, name:"Julián Álvarez", pos:"DEL", rating:86, price:80, clue:"La 'Araña' argentina que gana títulos allá donde va y aporta trabajo y gol." },
+        { id:57, name:"Victor Osimhen", pos:"DEL", rating:87, price:95, clue:"El nigeriano potente que fue clave en el scudetto del Napoli y asusta a cualquier defensa." },
+        { id:58, name:"Antoine Griezmann", pos:"DEL", rating:86, price:55, clue:"El francés del Atlético que combina inteligencia, movimiento y un toque de calidad excepcional." },
+        { id:59, name:"Heung-min Son", pos:"DEL", rating:86, price:60, clue:"El surcoreano del Tottenham que es letal con ambas piernas y un ejemplo de profesionalismo." },
+        { id:60, name:"Rafael Leão", pos:"DEL", rating:86, price:75, clue:"El portugués del Milan que cuando arranca en carrera parece imposible de detener." },
+        { id:61, name:"Alexander Isak", pos:"DEL", rating:85, price:80, clue:"El sueco elegante del Newcastle que combina altura, técnica y un olfato de gol creciente." },
+        { id:62, name:"Cole Palmer", pos:"DEL", rating:85, price:85, clue:"El inglés del Chelsea que se destapó como goleador y asistidor desde el mediocampo ofensivo." },
+        { id:63, name:"Gabriel Martinelli", pos:"DEL", rating:85, price:70, clue:"El brasileño del Arsenal que ataca el espacio con una velocidad y desparpajo enormes." },
+        { id:64, name:"Ousmane Dembélé", pos:"DEL", rating:85, price:65, clue:"El francés del PSG que cuando está sano es uno de los extremos más desequilibrantes del mundo." },
+        { id:65, name:"Raphinha", pos:"DEL", rating:85, price:60, clue:"El brasileño del Barça que aporta desborde, centros y goles desde la banda." },
+        { id:66, name:"Cody Gakpo", pos:"DEL", rating:84, price:55, clue:"El holandés del Liverpool que puede jugar de 9 o de extremo y aporta gol y trabajo." },
+        { id:67, name:"Kai Havertz", pos:"DEL", rating:84, price:60, clue:"El alemán del Arsenal que se reinventó como delantero y marca goles importantes." },
+        { id:68, name:"Álvaro Morata", pos:"DEL", rating:83, price:40, clue:"El español que siempre rinde con la selección y pelea como un león en cada club." },
+        { id:69, name:"Romelu Lukaku", pos:"DEL", rating:84, price:45, clue:"El belga poderoso que sigue siendo un referencia de área cuando está motivado." },
+        { id:70, name:"Marcus Rashford", pos:"DEL", rating:84, price:50, clue:"El inglés del United que cuando confía en sí mismo es capaz de destrozar cualquier defensa." },
+        { id:71, name:"Sergio Ramos", pos:"DEF", rating:84, price:25, clue:"El eterno capitán español que ha ganado de todo y sigue compitiendo con intensidad legendaria." },
+        { id:72, name:"Luka Modrić", pos:"MED", rating:85, price:30, clue:"El mago croata que desafía al tiempo y sigue dictando el juego en el Bernabéu." },
+        { id:73, name:"Toni Kroos", pos:"MED", rating:86, price:35, clue:"El alemán que se retiró como leyenda después de ganar la Champions y la Eurocopa el mismo año." },
+        { id:74, name:"Karim Benzema", pos:"DEL", rating:86, price:40, clue:"El francés que ganó el Balón de Oro y ahora brilla en Arabia con la misma elegancia." },
+        { id:75, name:"N'Golo Kanté", pos:"MED", rating:85, price:35, clue:"El francés que parece tener dos pulmones extra y recupera balones como nadie en el mundo." },
+        { id:76, name:"Manuel Neuer", pos:"POR", rating:87, price:25, clue:"El inventor del 'portero-líbero' que sigue siendo una referencia absoluta en el Bayern." },
+        { id:77, name:"Andrew Robertson", pos:"DEF", rating:85, price:45, clue:"El lateral escocés del Liverpool que combina intensidad, centros y un carácter inquebrantable." },
+        { id:78, name:"João Cancelo", pos:"DEF", rating:85, price:50, clue:"El lateral portugués total que puede jugar en ambas bandas y aporta mucho en ataque." },
+        { id:79, name:"Eduardo Camavinga", pos:"MED", rating:85, price:70, clue:"El francés del Madrid que puede jugar de pivote, interior o incluso lateral con total naturalidad." },
+        { id:80, name:"Arda Güler", pos:"MED", rating:82, price:55, clue:"La perla turca del Real Madrid que promete ser uno de los grandes talentos de esta generación." },
+        { id:81, name:"Endrick", pos:"DEL", rating:80, price:60, clue:"El joven brasileño del Madrid que llegó con el cartel de futuro superestrella mundial." },
+        { id:82, name:"Pau Cubarsí", pos:"DEF", rating:82, price:50, clue:"El central español del Barça que con 17 años ya parecía un veterano en el Camp Nou." },
+        { id:83, name:"Warren Zaïre-Emery", pos:"MED", rating:82, price:55, clue:"El mediocampista francés del PSG que debutó muy joven y ya es titular con la absoluta." },
+        { id:84, name:"Kobbie Mainoo", pos:"MED", rating:81, price:50, clue:"El joven inglés del United que se destapó en una final de FA Cup y en la Eurocopa." },
+        { id:85, name:"Xavi Simons", pos:"MED", rating:83, price:60, clue:"El holandés formado en La Masía que ahora brilla con desborde y gol en la Bundesliga." },
+        // Más diversidad (Sudamérica, África, Asia, ligas menos mediáticas)
+        { id:86, name:"Lionel Messi", pos:"DEL", rating:90, price:40, clue:"El argentino zurdo más grande de la historia que sigue magia en la MLS tras conquistar el mundo." },
+        { id:87, name:"Cristiano Ronaldo", pos:"DEL", rating:86, price:35, clue:"El portugués récord de goles internacionales que aún compite en Arabia con hambre de títulos." },
+        { id:88, name:"Neymar Jr", pos:"DEL", rating:85, price:45, clue:"El brasileño de los regates imposibles que marcó una época en el Barça y el PSG." },
+        { id:89, name:"Sadio Mané", pos:"DEL", rating:84, price:40, clue:"El senegalés explosivo que brilló en el Liverpool y fue campeón de África con su selección." },
+        { id:90, name:"Mohamed Salah", pos:"DEL", rating:88, price:85, clue:"El egipcio del Liverpool que es máquina de goles y asistencias desde la banda derecha." },
+        { id:91, name:"Riyad Mahrez", pos:"DEL", rating:84, price:40, clue:"El argelino elegante del City que decide partidos con su pie izquierdo mágico." },
+        { id:92, name:"Achraf Hakimi", pos:"DEF", rating:86, price:70, clue:"El lateral marroquí ultraveloz del PSG que fue revelación en el Mundial de Qatar." },
+        { id:93, name:"Yassine Bounou", pos:"POR", rating:84, price:30, clue:"El 'Bono' marroquí héroe de penales que llevó a su selección a semifinales del Mundial." },
+        { id:94, name:"Sofyan Amrabat", pos:"MED", rating:82, price:35, clue:"El mediocentro marroquí que fue un muro en el Mundial y pelea cada balón como si fuera el último." },
+        { id:95, name:"Bruno Guimarães", pos:"MED", rating:85, price:70, clue:"El brasileño del Newcastle que combina llegada, recuperación y liderazgo en el mediocampo." },
+        { id:96, name:"Luis Díaz", pos:"DEL", rating:85, price:65, clue:"El colombiano del Liverpool que desborda por la izquierda con desparpajo y gol." },
+        { id:97, name:"James Rodríguez", pos:"MED", rating:81, price:20, clue:"El '10' colombiano de la zurda mágica que enamoró al mundo en el Mundial de Brasil 2014." },
+        { id:98, name:"Darwin Núñez", pos:"DEL", rating:83, price:55, clue:"El uruguayo potente del Liverpool que ataca el espacio como un misil y no deja de intentarlo." },
+        { id:99, name:"Federico Valverde", pos:"MED", rating:88, price:85, clue:"El uruguayo todoterreno del Real Madrid que corre más kilómetros que nadie y llega al área." },
+        { id:100, name:"José María Giménez", pos:"DEF", rating:83, price:35, clue:"El central uruguayo del Atlético que defiende como si le fuera la vida en cada duelo." },
+        { id:101, name:"Enzo Fernández", pos:"MED", rating:85, price:70, clue:"El argentino del Chelsea que se consagró en Qatar y destaca por su visión y pase." },
+        { id:102, name:"Alexis Mac Allister", pos:"MED", rating:85, price:65, clue:"El argentino del Liverpool que fue campeón del mundo y aporta equilibrio y llegada." },
+        { id:103, name:"Emiliano Martínez", pos:"POR", rating:88, price:70, clue:"El 'Dibu' que se convirtió en héroe mundial con atajadas y provocaciones en Qatar." },
+        { id:104, name:"Julián Álvarez", pos:"DEL", rating:86, price:80, clue:"La 'Araña' argentina que gana títulos allá donde va y aporta trabajo y gol." },
+        { id:105, name:"Rodrigo De Paul", pos:"MED", rating:83, price:40, clue:"El mediocampista argentino del Atlético que no para de correr y conectar el juego de la Albiceleste." },
+        { id:106, name:"Nicolás Otamendi", pos:"DEF", rating:82, price:15, clue:"El central argentino veterano que sigue rindiendo a gran nivel y fue campeón del mundo." },
+        { id:107, name:"Takefusa Kubo", pos:"DEL", rating:83, price:50, clue:"El 'Messi japonés' de la Real Sociedad que desequilibra con regate y visión de gol." },
+        { id:108, name:"Kaoru Mitoma", pos:"DEL", rating:83, price:45, clue:"El extremo japonés del Brighton que se hizo famoso por sus regates virales y su efectividad." },
+        { id:109, name:"Wataru Endo", pos:"MED", rating:81, price:25, clue:"El pivote japonés del Liverpool que aporta equilibrio, robo y salida limpia de balón." },
+        { id:110, name:"Min-jae Kim", pos:"DEF", rating:85, price:62, clue:"El central surcoreano del Bayern que destaca por su anticipación y contundencia física." },
+        { id:111, name:"Heung-min Son", pos:"DEL", rating:86, price:60, clue:"El surcoreano del Tottenham que es letal con ambas piernas y un ejemplo de profesionalismo." },
+        { id:112, name:"Lee Kang-in", pos:"MED", rating:81, price:40, clue:"El talentoso surcoreano del PSG que destaca por su golpeo y visión de juego." },
+        { id:113, name:"Victor Osimhen", pos:"DEL", rating:87, price:95, clue:"El nigeriano potente que fue clave en el scudetto del Napoli y asusta a cualquier defensa." },
+        { id:114, name:"Samuel Chukwueze", pos:"DEL", rating:81, price:35, clue:"El extremo nigeriano del Milan que desborda por la derecha con velocidad y desparpajo." },
+        { id:115, name:"Wilfred Ndidi", pos:"MED", rating:82, price:30, clue:"El mediocentro nigeriano que recupera balones como un imán y aporta contundencia." },
+        { id:116, name:"André Onana", pos:"POR", rating:84, price:45, clue:"El portero camerunés del United que juega con los pies como un líbero moderno." },
+        { id:117, name:"Bryan Mbeumo", pos:"DEL", rating:82, price:40, clue:"El delantero camerunés del Brentford que combina desmarque, gol y trabajo defensivo." },
+        { id:118, name:"Ismaël Koné", pos:"MED", rating:80, price:30, clue:"El joven mediocampista canadiense de origen marfileño que apunta alto en Europa." },
+        { id:119, name:"Alphonso Davies", pos:"DEF", rating:84, price:55, clue:"El lateral canadiense del Bayern que parece un rayo en carrera y aporta mucho en ataque." },
+        { id:120, name:"Jonathan David", pos:"DEL", rating:83, price:45, clue:"El delantero canadiense del Lille que marca goles con continuidad y buen movimiento." },
+        { id:121, name:"Giorgian de Arrascaeta", pos:"MED", rating:84, price:25, clue:"El uruguayo mago del Flamengo que reparte magia y goles en el fútbol brasileño." },
+        { id:122, name:"Pedro Rocha", pos:"DEL", rating:80, price:15, clue:"El delantero brasileño de área que siempre huele el gol en el momento justo." },
+        { id:123, name:"Weverton", pos:"POR", rating:81, price:12, clue:"El arquero brasileño sólido que se ha consolidado como referente en el fútbol sudamericano." },
+        { id:124, name:"Ángel Di María", pos:"DEL", rating:83, price:20, clue:"El argentino de la zurda mágica que ha decidido finales de Champions y un Mundial." },
+        { id:125, name:"Paulo Dybala", pos:"DEL", rating:84, price:35, clue:"La 'Joyita' argentina de la Roma que combina técnica, gol y un toque de magia constante." },
+        { id:126, name:"Lautaro Martínez", pos:"DEL", rating:88, price:90, clue:"El 'Toro' argentino del Inter que pelea cada balón y marca goles decisivos en Europa." },
+        { id:127, name:"Leandro Paredes", pos:"MED", rating:82, price:25, clue:"El pivote argentino de salida limpia que ordena el mediocampo con criterio y garra." },
+        { id:128, name:"Cristian Romero", pos:"DEF", rating:85, price:55, clue:"El central argentino del Tottenham que defiende con intensidad y gran anticipación." },
+        { id:129, name:"Nahuel Molina", pos:"DEF", rating:82, price:30, clue:"El lateral derecho argentino del Atlético que combina subidas y solidez defensiva." },
+        { id:130, name:"Exequiel Palacios", pos:"MED", rating:82, price:35, clue:"El mediocampista argentino del Leverkusen que fue clave en un histórico título de Bundesliga." }
+    ];
+
+    // ============================================================
+    // ESTADO GLOBAL
+    // ============================================================
+    const GameState = {
+        managerName: "DT Táctico",
+        budget: 1000,
+        difficulty: "profesional",
+        currentMode: null,
+        // Subasta
+        round: 0, maxRounds: 10, currentPlayer: null, currentBid: 0, bidLeader: null,
+        timer: 12, timerInterval: null, auctionPlayers: [], mySquad: [], bots: [],
+        passedThisRound: false, auctionFinished: false,
+        tournamentBracket: null, currentMatchIndex: 0, matches: [],
+        // Impostor multijugador
+        imp: {
+            playerCount: 5,
+            impostorCount: 1,
+            cardMode: 'shared',   // 'shared' | 'unique'
+            players: [],
+            currentRevealIndex: 0,
+            currentVoteIndex: 0,
+            votes: {},
+            discussSeconds: 120,
+            discussInterval: null
+        },
+        // Draft mode (standalone)
+        draft: {
+            formation: '4231',
+            slots: [],
+            slotIndex: 0,
+            choices: [],
+            assigned: {},
+            bench: [],
+            usedIds: new Set()
+        }
+    };
+
+    const BOT_PERSONALITIES = {
+        amateur: { aggressiveness: 0.3, maxBidMultiplier: 1.1 },
+        profesional: { aggressiveness: 0.55, maxBidMultiplier: 1.35 },
+        leyenda: { aggressiveness: 0.8, maxBidMultiplier: 1.6 }
+    };
+    const BOT_NAMES = [
+        { name: "Carlos", emoji: "🔥" },
+        { name: "Sofía", emoji: "🧠" },
+        { name: "Mateo", emoji: "🛡️" }
+    ];
+    const BANTER = {
+        bid: ["¡Esa puja es mía!", "No me vais a ganar esta vez...", "¡Subo la apuesta!", "Este me encaja perfecto.", "¡Esto se pone interesante!"],
+        win: ["¡Sí! Lo conseguí.", "Buen fichaje para mi equipo.", "Gracias por la competencia."],
+        general: ["La pista es muy críptica...", "¿Alguien tiene idea de quién puede ser?", "Necesito un delantero.", "El presupuesto se me está acabando..."]
+    };
+    const FAKE_CLUES = [
+        "Ganó el Balón de Oro en dos ocasiones consecutivas.",
+        "Marcó el gol de la victoria en una final de Champions con el Bayern.",
+        "Es el máximo goleador histórico de la Premier League.",
+        "Fue compañero de Messi en el PSG durante tres temporadas.",
+        "Debutó en Primera con 15 años en el Ajax.",
+        "Tiene más de 100 goles con la selección de Brasil.",
+        "Fue nombrado mejor jugador de la Eurocopa 2020.",
+        "Ha ganado 5 Champions League con el mismo club.",
+        "Es el único jugador que ha marcado en 3 Mundiales seguidos.",
+        "Fichó por el Real Madrid procedente del Manchester United."
+    ];
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    window.onload = function() {
+        const bar = document.getElementById('loading-bar');
+        const text = document.getElementById('loading-text');
+        const steps = [
+            { pct: 25, msg: "Cargando 85 jugadores..." },
+            { pct: 50, msg: "Preparando modo Impostor multijugador..." },
+            { pct: 75, msg: "Configurando subastas y torneos..." },
+            { pct: 100, msg: "¡Listo!" }
+        ];
+        let i = 0;
+        const iv = setInterval(() => {
+            if (i < steps.length) { bar.style.width = steps[i].pct + '%'; text.textContent = steps[i].msg; i++; }
+            else {
+                clearInterval(iv);
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.add('hidden-screen');
+                    document.getElementById('lobby-screen').classList.remove('hidden-screen');
+                }, 500);
+            }
+        }, 400);
+    };
+
+    function selectBudget(amount) {
+        GameState.budget = amount;
+        document.querySelectorAll('.budget-btn').forEach(b => { b.classList.remove('border-2','border-cyber-neon','bg-cyber-neon/10','border-cyber-accent','bg-cyber-accent/10','border-cyber-gold','bg-cyber-gold/10'); b.classList.add('border','border-transparent'); });
+        const btn = document.getElementById('budget-' + amount);
+        if (amount === 800) btn.classList.add('border-2','border-cyber-accent','bg-cyber-accent/10');
+        else if (amount === 1000) btn.classList.add('border-2','border-cyber-neon','bg-cyber-neon/10');
+        else btn.classList.add('border-2','border-cyber-gold','bg-cyber-gold/10');
+    }
+    function selectDifficulty(diff) {
+        GameState.difficulty = diff;
+        document.querySelectorAll('.diff-btn').forEach(b => { b.classList.remove('border-2','border-cyber-neon','bg-cyber-neon/10','border-green-400','bg-green-400/10','border-cyber-accent','bg-cyber-accent/10'); b.classList.add('border','border-transparent'); });
+        const btn = document.getElementById('diff-' + diff);
+        if (diff === 'amateur') btn.classList.add('border-2','border-green-400','bg-green-400/10');
+        else if (diff === 'profesional') btn.classList.add('border-2','border-cyber-neon','bg-cyber-neon/10');
+        else btn.classList.add('border-2','border-cyber-accent','bg-cyber-accent/10');
+    }
+    function startMode(mode) {
+        GameState.managerName = document.getElementById('manager-name').value.trim() || "DT Táctico";
+        GameState.currentMode = mode;
+        if (mode === 'auction') initAuction();
+        else if (mode === 'impostor') initImpostorSetup();
+        else if (mode === 'draft') initDraftSetup();
+    }
+
+    // ============================================================
+    // SUBASTA (resumida pero completa)
+    // ============================================================
+    function pickDiverseAuctionPlayers(count) {
+        // Objetivo aproximado: 1-2 POR, 2-3 DEF, 2-3 MED, 2-3 DEL
+        const byPos = { POR: [], DEF: [], MED: [], DEL: [] };
+        PLAYERS_DB.forEach(p => { if (byPos[p.pos]) byPos[p.pos].push(p); });
+        Object.keys(byPos).forEach(pos => byPos[pos].sort(() => Math.random() - 0.5));
+
+        const quotas = { POR: 2, DEF: 3, MED: 3, DEL: 2 };
+        const picked = [];
+        const usedIds = new Set();
+
+        // Primero rellenar cuotas
+        for (const [pos, n] of Object.entries(quotas)) {
+            let taken = 0;
+            for (const p of byPos[pos]) {
+                if (taken >= n || picked.length >= count) break;
+                if (!usedIds.has(p.id)) {
+                    picked.push(p);
+                    usedIds.add(p.id);
+                    taken++;
+                }
+            }
+        }
+        // Completar con cualquier posición restante si hace falta
+        if (picked.length < count) {
+            const rest = PLAYERS_DB.filter(p => !usedIds.has(p.id)).sort(() => Math.random() - 0.5);
+            for (const p of rest) {
+                if (picked.length >= count) break;
+                picked.push(p);
+                usedIds.add(p.id);
+            }
+        }
+        // Mezclar el orden de las 10 rondas
+        return picked.sort(() => Math.random() - 0.5);
+    }
+
+    function initAuction() {
+        GameState.round = 0; GameState.mySquad = []; GameState.currentBid = 0; GameState.bidLeader = null; GameState.auctionFinished = false; GameState.passedThisRound = false;
+        // Selección diversa: equilibrar posiciones y evitar repetir los mismos siempre
+        GameState.auctionPlayers = pickDiverseAuctionPlayers(10);
+        const pers = BOT_PERSONALITIES[GameState.difficulty];
+        GameState.bots = BOT_NAMES.map((b, i) => ({
+            id: 'bot_' + i, name: b.name, emoji: b.emoji,
+            budget: GameState.budget + Math.floor((Math.random() - 0.5) * 200),
+            squad: [], personality: pers, aggressiveness: pers.aggressiveness * (0.8 + Math.random() * 0.4)
+        }));
+        document.getElementById('lobby-screen').classList.add('hidden-screen');
+        document.getElementById('auction-screen').classList.remove('hidden-screen');
+        document.getElementById('display-manager-name').textContent = GameState.managerName;
+        document.getElementById('current-budget').textContent = GameState.budget;
+        updateSquadUI(); updateBotsUI();
+        addChatMessage("Sistema", "¡Bienvenidos a la Subasta Misteriosa! Formación: 1 POR, 2 DEF, 2 MED, 1 DEL.", "system");
+        setTimeout(() => nextAuctionRound(), 1000);
+    }
+    function nextAuctionRound() {
+        if (GameState.round >= GameState.maxRounds) { finishAuction(); return; }
+        GameState.round++; GameState.currentPlayer = GameState.auctionPlayers[GameState.round - 1];
+        GameState.currentBid = 0; GameState.bidLeader = null; GameState.passedThisRound = false;
+        document.getElementById('current-round').textContent = GameState.round;
+        document.getElementById('mystery-position').textContent = GameState.currentPlayer.pos;
+        document.getElementById('mystery-clue').textContent = '"' + GameState.currentPlayer.clue + '"';
+        document.getElementById('current-bid').textContent = '0';
+        document.getElementById('bid-leader').textContent = 'Nadie';
+        document.getElementById('bid-controls').classList.remove('hidden');
+        document.getElementById('round-result').classList.add('hidden');
+        addChatMessage("Sistema", `Ronda ${GameState.round}: Jugador misterioso (${GameState.currentPlayer.pos}).`, "system");
+        startTimer();
+        setTimeout(() => { if (Math.random() < 0.5) { const bot = GameState.bots[Math.floor(Math.random()*3)]; addChatMessage(bot.name, BANTER.general[Math.floor(Math.random()*BANTER.general.length)], "bot"); } }, 1500);
+    }
+    function startTimer() {
+        clearInterval(GameState.timerInterval); GameState.timer = 12; updateTimerUI();
+        GameState.timerInterval = setInterval(() => {
+            GameState.timer--; updateTimerUI();
+            if (GameState.timer <= 0) { clearInterval(GameState.timerInterval); endRound(); }
+            if (GameState.timer > 2 && Math.random() < 0.15) botAttemptBid();
+        }, 1000);
+    }
+    function updateTimerUI() {
+        document.getElementById('timer-text').textContent = GameState.timer;
+        const color = GameState.timer <= 3 ? '#e94560' : '#00f5d4';
+        const pct = 1 - GameState.timer / 12;
+        // Desktop circle (r=24, circumference ≈ 150.8)
+        const circle = document.getElementById('timer-circle');
+        if (circle) {
+            circle.style.strokeDashoffset = 150.8 * pct;
+            circle.setAttribute('stroke', color);
+        }
+        // Mobile circle (r=18, circumference ≈ 113.1)
+        const circleM = document.getElementById('timer-circle-mobile');
+        if (circleM) {
+            circleM.style.strokeDashoffset = 113.1 * pct;
+            circleM.setAttribute('stroke', color);
+        }
+        const timerText = document.getElementById('timer-text');
+        if (GameState.timer <= 3) timerText.classList.add('text-cyber-accent');
+        else timerText.classList.remove('text-cyber-accent');
+    }
+    function placeBid(amount) {
+        if (GameState.passedThisRound) return;
+        const newBid = GameState.currentBid + amount;
+        if (newBid > GameState.budget) { addChatMessage("Sistema", "Presupuesto insuficiente.", "system"); return; }
+        if (!canAddPlayer(GameState.currentPlayer.pos, GameState.mySquad)) { addChatMessage("Sistema", `Posición ${GameState.currentPlayer.pos} completa.`, "system"); return; }
+        GameState.currentBid = newBid; GameState.bidLeader = 'player';
+        document.getElementById('current-bid').textContent = newBid;
+        document.getElementById('bid-leader').textContent = GameState.managerName;
+        GameState.timer = 12; updateTimerUI();
+        addChatMessage(GameState.managerName, `¡Pujo $${newBid}M!`, "player");
+        setTimeout(() => botAttemptBid(), 800 + Math.random() * 1200);
+    }
+    function placeCustomBid() {
+        const amount = parseInt(document.getElementById('custom-bid').value);
+        if (!amount || amount <= GameState.currentBid) return;
+        if (amount > GameState.budget || !canAddPlayer(GameState.currentPlayer.pos, GameState.mySquad)) return;
+        GameState.currentBid = amount; GameState.bidLeader = 'player';
+        document.getElementById('current-bid').textContent = amount;
+        document.getElementById('bid-leader').textContent = GameState.managerName;
+        document.getElementById('custom-bid').value = '';
+        GameState.timer = 12; updateTimerUI();
+        addChatMessage(GameState.managerName, `¡Pujo $${amount}M!`, "player");
+        setTimeout(() => botAttemptBid(), 800 + Math.random() * 1200);
+    }
+    function passRound() {
+        GameState.passedThisRound = true;
+        document.getElementById('bid-controls').classList.add('hidden');
+        addChatMessage(GameState.managerName, "Paso esta ronda.", "player");
+    }
+    function botAttemptBid() {
+        if (GameState.timer <= 0) return;
+        const available = GameState.bots.filter(bot => {
+            if (!canAddPlayer(GameState.currentPlayer.pos, bot.squad)) return false;
+            const maxW = Math.floor(GameState.currentPlayer.price * bot.personality.maxBidMultiplier * (0.7 + bot.aggressiveness));
+            return bot.budget >= GameState.currentBid + 10 && GameState.currentBid < maxW;
+        });
+        if (!available.length) return;
+        available.sort((a,b) => b.aggressiveness - a.aggressiveness);
+        const bot = available[0];
+        if (Math.random() > bot.aggressiveness * 0.9) return;
+        const inc = [10,25,50,100][Math.floor(Math.random()*4)];
+        const newBid = GameState.currentBid + inc;
+        if (newBid > bot.budget) return;
+        GameState.currentBid = newBid; GameState.bidLeader = bot.id;
+        document.getElementById('current-bid').textContent = newBid;
+        document.getElementById('bid-leader').textContent = bot.name;
+        GameState.timer = Math.max(GameState.timer, 8); updateTimerUI();
+        addChatMessage(bot.name, BANTER.bid[Math.floor(Math.random()*BANTER.bid.length)] + ` $${newBid}M`, "bot");
+    }
+    function endRound() {
+        clearInterval(GameState.timerInterval);
+        document.getElementById('bid-controls').classList.add('hidden');
+        const resultDiv = document.getElementById('round-result');
+        resultDiv.classList.remove('hidden');
+        if (!GameState.bidLeader || GameState.currentBid === 0) {
+            resultDiv.innerHTML = `<div class="text-gray-400"><i class="fas fa-times-circle text-3xl mb-2"></i><p class="font-bold">Sin pujas.</p></div>`;
+            resultDiv.className = 'mt-6 p-5 rounded-xl text-center bg-cyber-800/50';
+        } else if (GameState.bidLeader === 'player') {
+            GameState.budget -= GameState.currentBid;
+            GameState.mySquad.push({ ...GameState.currentPlayer, paid: GameState.currentBid });
+            document.getElementById('current-budget').textContent = GameState.budget;
+            updateSquadUI();
+            resultDiv.innerHTML = `<div class="text-cyber-neon"><i class="fas fa-check-circle text-3xl mb-2"></i><p class="font-bold text-xl">¡Fichaje conseguido!</p><p class="text-sm mt-1">$${GameState.currentBid}M</p></div>`;
+            resultDiv.className = 'mt-6 p-5 rounded-xl text-center bg-cyber-neon/10 border border-cyber-neon/40';
+            addChatMessage("Sistema", `¡${GameState.managerName} se lleva al jugador por $${GameState.currentBid}M!`, "system");
+        } else {
+            const bot = GameState.bots.find(b => b.id === GameState.bidLeader);
+            bot.budget -= GameState.currentBid;
+            bot.squad.push({ ...GameState.currentPlayer, paid: GameState.currentBid });
+            updateBotsUI();
+            resultDiv.innerHTML = `<div class="text-cyber-purple"><i class="fas fa-robot text-3xl mb-2"></i><p class="font-bold text-xl">${bot.name} se lleva el fichaje</p><p class="text-sm mt-1">$${GameState.currentBid}M</p></div>`;
+            resultDiv.className = 'mt-6 p-5 rounded-xl text-center bg-cyber-purple/10 border border-cyber-purple/40';
+            addChatMessage(bot.name, BANTER.win[Math.floor(Math.random()*BANTER.win.length)], "bot");
+        }
+        setTimeout(() => nextAuctionRound(), 3000);
+    }
+    function canAddPlayer(pos, squad) {
+        const c = { POR:0, DEF:0, MED:0, DEL:0 };
+        squad.forEach(p => c[p.pos]++);
+        if (pos === 'POR') return c.POR < 1;
+        if (pos === 'DEF') return c.DEF < 2;
+        if (pos === 'MED') return c.MED < 2;
+        if (pos === 'DEL') return c.DEL < 1;
+        return false;
+    }
+    function updateSquadUI() {
+        const container = document.getElementById('my-squad');
+        document.getElementById('squad-count').textContent = GameState.mySquad.length;
+        if (!GameState.mySquad.length) {
+            container.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Aún no tienes jugadores</p>';
+            document.getElementById('squad-value').textContent = '0';
+            document.getElementById('squad-rating').textContent = '0';
+            return;
+        }
+        let val = 0, rat = 0;
+        container.innerHTML = GameState.mySquad.map(p => {
+            val += p.paid; rat += p.rating;
+            return `<div class="player-card glass rounded-lg p-3 pos-${p.pos} flex items-center justify-between"><div><p class="font-bold text-sm">${p.name}</p><p class="text-xs text-gray-400">${p.pos} • RTG ${p.rating}</p></div><p class="text-cyber-gold font-bold text-sm">$${p.paid}M</p></div>`;
+        }).join('');
+        document.getElementById('squad-value').textContent = val;
+        document.getElementById('squad-rating').textContent = rat;
+    }
+    function updateBotsUI() {
+        document.getElementById('bots-status').innerHTML = GameState.bots.map(b => `
+            <div class="glass rounded-xl p-3">
+                <div class="flex items-center justify-between mb-1"><span class="font-bold">${b.emoji} ${b.name}</span><span class="text-xs text-gray-400">${b.squad.length}/6</span></div>
+                <div class="flex justify-between text-xs"><span class="text-gray-400">Presupuesto</span><span class="text-cyber-neon">$${b.budget}M</span></div>
+            </div>`).join('');
+    }
+    function addChatMessage(author, text, type) {
+        const chat = document.getElementById('auction-chat');
+        const colors = { system:'text-gray-400', player:'text-cyber-neon', bot:'text-cyber-purple' };
+        const msg = document.createElement('div');
+        msg.className = 'chat-bubble text-sm';
+        msg.innerHTML = `<span class="font-bold ${colors[type]||'text-white'}">${author}:</span> <span class="text-gray-300">${text}</span>`;
+        chat.appendChild(msg); chat.scrollTop = chat.scrollHeight;
+    }
+    function finishAuction() {
+        clearInterval(GameState.timerInterval);
+        const used = new Set();
+        GameState.mySquad.forEach(p => used.add(p.id));
+        GameState.bots.forEach(b => b.squad.forEach(p => used.add(p.id)));
+        const remaining = PLAYERS_DB.filter(p => !used.has(p.id));
+        function fill(squad) {
+            const need = { POR:1, DEF:2, MED:2, DEL:1 };
+            squad.forEach(p => need[p.pos]--);
+            for (const pos of Object.keys(need)) {
+                while (need[pos] > 0 && remaining.length) {
+                    const cands = remaining.filter(p => p.pos === pos);
+                    if (!cands.length) break;
+                    const pick = cands[Math.floor(Math.random()*cands.length)];
+                    remaining.splice(remaining.findIndex(p => p.id === pick.id), 1);
+                    squad.push({ ...pick, paid: Math.min(pick.price, 30) });
+                    need[pos]--;
+                }
+            }
+        }
+        fill(GameState.mySquad); GameState.bots.forEach(b => fill(b.squad));
+        document.getElementById('auction-screen').classList.add('hidden-screen');
+        document.getElementById('tournament-screen').classList.remove('hidden-screen');
+        showRevealedSquads(); createBracket();
+    }
+    function showRevealedSquads() {
+        function html(name, squad, isP) {
+            const r = squad.reduce((s,p)=>s+p.rating,0), v = squad.reduce((s,p)=>s+p.paid,0);
+            return `<div class="glass-strong rounded-2xl p-5 ${isP?'neon-border':''}">
+                <h3 class="font-bold text-lg mb-3">${isP?'⭐':'🤖'} ${name}</h3>
+                <div class="space-y-2 mb-4">${squad.map(p=>`<div class="flex justify-between text-sm bg-cyber-800/40 rounded-lg px-3 py-2"><span><span class="text-xs text-gray-400 mr-2">${p.pos}</span>${p.name}</span><span class="rating-badge px-2 py-0.5 rounded text-xs font-bold">${p.rating}</span></div>`).join('')}</div>
+                <div class="flex justify-between text-sm border-t border-white/10 pt-3"><span class="text-gray-400">Rating: <strong class="text-cyber-neon">${r}</strong></span><span class="text-gray-400">$${v}M</span></div>
+            </div>`;
+        }
+        let h = html(GameState.managerName, GameState.mySquad, true);
+        GameState.bots.forEach(b => h += html(b.name, b.squad));
+        document.getElementById('revealed-squads').innerHTML = h;
+    }
+    function createBracket() {
+        const teams = [{ name: GameState.managerName, squad: GameState.mySquad, isPlayer: true }, ...GameState.bots.map(b => ({ name: b.name, squad: b.squad, isPlayer: false }))];
+        const sh = [...teams].sort(() => Math.random() - 0.5);
+        GameState.matches = [
+            { round:'Semifinal 1', team1:sh[0], team2:sh[1], winner:null, played:false },
+            { round:'Semifinal 2', team1:sh[2], team2:sh[3], winner:null, played:false },
+            { round:'Gran Final', team1:null, team2:null, winner:null, played:false }
+        ];
+        GameState.currentMatchIndex = 0; renderBracket();
+    }
+    function renderBracket() {
+        document.getElementById('bracket').innerHTML = GameState.matches.map(m => {
+            if (m.round === 'Gran Final' && !m.team1) return `<div class="text-center p-4 glass rounded-xl opacity-50"><p class="font-bold text-cyber-gold mb-2">${m.round}</p><p class="text-gray-400">Esperando ganadores...</p></div>`;
+            return `<div class="flex flex-col md:flex-row items-center justify-center gap-4 p-4 glass rounded-xl ${m.played?'opacity-70':''}">
+                <div class="flex-1 text-center md:text-right"><p class="font-bold ${m.winner===m.team1?.name?'text-cyber-gold':''}">${m.team1?.name||'TBD'}</p></div>
+                <div class="px-4 py-2 bg-cyber-800 rounded-lg font-bold text-sm">${m.round}${m.played?`<div class="text-xs text-gray-400 mt-1">${m.score||''}</div>`:''}</div>
+                <div class="flex-1 text-center md:text-left"><p class="font-bold ${m.winner===m.team2?.name?'text-cyber-gold':''}">${m.team2?.name||'TBD'}</p></div>
+            </div>`;
+        }).join('');
+    }
+    function startTournamentSimulation() {
+        document.getElementById('btn-start-tournament').classList.add('hidden');
+        document.getElementById('tournament-screen').classList.add('hidden-screen');
+        document.getElementById('match-screen').classList.remove('hidden-screen');
+        playNextMatch();
+    }
+    function playNextMatch() {
+        const match = GameState.matches[GameState.currentMatchIndex];
+        if (!match || match.played) { if (GameState.currentMatchIndex < 2) { GameState.currentMatchIndex++; playNextMatch(); } return; }
+        document.getElementById('match-team1').textContent = match.team1.name;
+        document.getElementById('match-team2').textContent = match.team2.name;
+        document.getElementById('match-score1').textContent = '0';
+        document.getElementById('match-score2').textContent = '0';
+        document.getElementById('match-minute').textContent = "0'";
+        document.getElementById('match-commentary').innerHTML = '';
+        document.getElementById('match-result-area').classList.add('hidden');
+        const r1 = match.team1.squad.reduce((s,p)=>s+p.rating,0), r2 = match.team2.squad.reduce((s,p)=>s+p.rating,0);
+        simulateMatch(match, r1, r2);
+    }
+    function simulateMatch(match, rating1, rating2) {
+        const commentary = document.getElementById('match-commentary');
+        let s1 = 0, s2 = 0;
+        const events = [];
+        const n = 8 + Math.floor(Math.random()*5);
+        for (let i = 0; i < n; i++) {
+            const m = Math.min(90, Math.max(1, Math.floor((90/n)*(i+1) + Math.random()*8 - 4)));
+            const f1 = rating1 * (0.85 + Math.random()*0.3), f2 = rating2 * (0.85 + Math.random()*0.3);
+            if (Math.random() < 0.55) {
+                if (f1 > f2 * (0.9 + Math.random()*0.3)) events.push({ minute:m, type:'goal', team:1 });
+                else if (f2 > f1 * (0.9 + Math.random()*0.3)) events.push({ minute:m, type:'goal', team:2 });
+                else events.push({ minute:m, type:'chance', team: Math.random()>0.5?1:2 });
+            } else events.push({ minute:m, type:'play', team:0 });
+        }
+        events.sort((a,b)=>a.minute-b.minute);
+        const phrases = {
+            goal: ["¡GOOOL! Disparo imparable.", "¡La mete! Gran definición.", "¡Golazo!", "¡Cabezazo al ángulo!", "¡Contragolpe letal!"],
+            chance: ["¡Ocasión clara! El portero salva.", "Pasa rozando el post.", "Disparo desviado.", "¡Mano a mano! Atajada."],
+            play: ["Buen dominio en el mediocampo.", "Presión alta.", "Cambio de orientación.", "El partido se pone intenso."]
+        };
+        let idx = 0;
+        const iv = setInterval(() => {
+            if (idx >= events.length) {
+                clearInterval(iv);
+                setTimeout(() => {
+                    if (s1 === s2) { if (Math.random()>0.5) s1++; else s2++; }
+                    document.getElementById('match-score1').textContent = s1;
+                    document.getElementById('match-score2').textContent = s2;
+                    document.getElementById('match-minute').textContent = "90'";
+                    const winner = s1 > s2 ? match.team1 : match.team2;
+                    match.winner = winner.name; match.score = `${s1} - ${s2}`; match.played = true;
+                    if (GameState.currentMatchIndex === 0) GameState.matches[2].team1 = winner;
+                    else if (GameState.currentMatchIndex === 1) GameState.matches[2].team2 = winner;
+                    document.getElementById('match-winner-text').innerHTML = `<span class="text-cyber-gold">¡${winner.name} gana ${s1}-${s2}!</span>`;
+                    document.getElementById('match-result-area').classList.remove('hidden');
+                    if (GameState.currentMatchIndex === 2) {
+                        document.getElementById('btn-next-match').textContent = 'Ver Campeón →';
+                        document.getElementById('btn-next-match').onclick = showChampion;
+                    } else {
+                        document.getElementById('btn-next-match').textContent = 'Siguiente partido →';
+                        document.getElementById('btn-next-match').onclick = nextTournamentMatch;
+                    }
+                }, 800);
+                return;
+            }
+            const ev = events[idx];
+            document.getElementById('match-minute').textContent = ev.minute + "'";
+            const div = document.createElement('div'); div.className = 'text-sm text-gray-300 animate-slide-up';
+            if (ev.type === 'goal') {
+                if (ev.team === 1) { s1++; document.getElementById('match-score1').textContent = s1; div.textContent = `⚽ ${ev.minute}' - ${phrases.goal[Math.floor(Math.random()*5)]} ¡Gol de ${match.team1.name}!`; }
+                else { s2++; document.getElementById('match-score2').textContent = s2; div.textContent = `⚽ ${ev.minute}' - ${phrases.goal[Math.floor(Math.random()*5)]} ¡Gol de ${match.team2.name}!`; }
+            } else if (ev.type === 'chance') div.textContent = `🔥 ${ev.minute}' - ${phrases.chance[Math.floor(Math.random()*4)]} (${ev.team===1?match.team1.name:match.team2.name})`;
+            else div.textContent = `⏱️ ${ev.minute}' - ${phrases.play[Math.floor(Math.random()*4)]}`;
+            commentary.appendChild(div); commentary.scrollTop = commentary.scrollHeight;
+            idx++;
+        }, 1100);
+    }
+    function nextTournamentMatch() { GameState.currentMatchIndex++; if (GameState.currentMatchIndex > 2) showChampion(); else playNextMatch(); }
+    function showChampion() {
+        const final = GameState.matches[2];
+        const champ = final.winner === GameState.managerName ? { name: GameState.managerName, squad: GameState.mySquad } : (GameState.bots.find(b => b.name === final.winner) || { name: final.winner, squad: [] });
+        document.getElementById('match-screen').classList.add('hidden-screen');
+        document.getElementById('champion-screen').classList.remove('hidden-screen');
+        document.getElementById('champion-name').textContent = champ.name;
+        document.getElementById('champion-squad').innerHTML = `<h4 class="font-bold mb-3 text-center">Plantilla Campeona</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${(champ.squad||[]).map(p=>`<div class="flex justify-between bg-cyber-800/50 rounded-lg px-3 py-2 text-sm"><span>${p.pos} ${p.name}</span><span class="text-cyber-neon font-bold">${p.rating}</span></div>`).join('')}</div>`;
+        launchConfetti();
+    }
+    function launchConfetti() {
+        const end = Date.now() + 4000;
+        (function frame() {
+            confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#00f5d4','#9b5de5','#e94560','#f7b801'] });
+            confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#00f5d4','#9b5de5','#e94560','#f7b801'] });
+            if (Date.now() < end) requestAnimationFrame(frame);
+        })();
+        confetti({ particleCount: 120, spread: 100, origin: { y: 0.6 }, colors: ['#00f5d4','#9b5de5','#e94560','#f7b801','#00bbf9'] });
+    }
+
+    // ============================================================
+    // IMPOSTOR MULTIJUGADOR CON AMIGOS (pass-and-play)
+    // ============================================================
+    function initImpostorSetup() {
+        document.getElementById('lobby-screen').classList.add('hidden-screen');
+        document.getElementById('impostor-setup-screen').classList.remove('hidden-screen');
+        GameState.imp.playerCount = 5;
+        GameState.imp.impostorCount = 1;
+        renderPlayerNameInputs();
+        setImpostorCount(1);
+    }
+
+    function changePlayerCount(delta) {
+        let n = GameState.imp.playerCount + delta;
+        n = Math.max(3, Math.min(10, n));
+        GameState.imp.playerCount = n;
+        document.getElementById('player-count-display').textContent = n;
+        if (n < 6 && GameState.imp.impostorCount === 2) setImpostorCount(1);
+        renderPlayerNameInputs();
+    }
+
+    function setImpostorCount(c) {
+        if (c === 2 && GameState.imp.playerCount < 6) return;
+        GameState.imp.impostorCount = c;
+        document.getElementById('imp-count-1').className = 'imp-count-btn glass rounded-xl py-3 font-bold ' + (c===1 ? 'border-2 border-cyber-accent bg-cyber-accent/20' : 'border border-transparent hover:border-cyber-purple');
+        document.getElementById('imp-count-2').className = 'imp-count-btn glass rounded-xl py-3 font-bold ' + (c===2 ? 'border-2 border-cyber-accent bg-cyber-accent/20' : 'border border-transparent hover:border-cyber-purple');
+    }
+
+    function setCardMode(mode) {
+        GameState.imp.cardMode = mode;
+        const sharedBtn = document.getElementById('mode-shared');
+        const uniqueBtn = document.getElementById('mode-unique');
+        const base = 'card-mode-btn glass rounded-xl p-4 text-left border border-transparent transition-all';
+        sharedBtn.className = base + (mode === 'shared' ? ' border-2 border-cyber-neon bg-cyber-neon/10' : ' hover:border-cyber-neon');
+        uniqueBtn.className = base + (mode === 'unique' ? ' border-2 border-cyber-purple bg-cyber-purple/10' : ' hover:border-cyber-purple');
+    }
+
+    function renderPlayerNameInputs() {
+        const list = document.getElementById('player-names-list');
+        let html = '';
+        for (let i = 0; i < GameState.imp.playerCount; i++) {
+            const val = GameState.imp.players[i]?.name || `Jugador ${i+1}`;
+            html += `<input type="text" id="pname-${i}" value="${val}" maxlength="16" placeholder="Nombre del jugador ${i+1}"
+                class="w-full bg-cyber-800 border border-cyber-purple/30 rounded-xl px-4 py-3 focus:outline-none focus:border-cyber-purple transition-all">`;
+        }
+        list.innerHTML = html;
+    }
+
+    function startImpostorGame() {
+        // Leer nombres
+        const names = [];
+        for (let i = 0; i < GameState.imp.playerCount; i++) {
+            const el = document.getElementById('pname-' + i);
+            names.push((el?.value || '').trim() || `Jugador ${i+1}`);
+        }
+        const unique = new Set(names.map(n => n.toLowerCase()));
+        if (unique.size < names.length) {
+            alert('Los nombres deben ser diferentes.');
+            return;
+        }
+
+        const mode = GameState.imp.cardMode === 'unique' ? 'unique' : 'shared';
+        assignRolesAndCards(names, mode, null);
+        document.getElementById('impostor-setup-screen').classList.add('hidden-screen');
+        document.getElementById('impostor-reveal-screen').classList.remove('hidden-screen');
+        showPassToPlayer();
+    }
+
+    function assignRolesAndCards(names, mode, draftPicks) {
+        const indices = [...Array(names.length).keys()].sort(() => Math.random() - 0.5);
+        const impostorIndices = new Set(indices.slice(0, GameState.imp.impostorCount));
+
+        let sharedCard = null;
+        let uniqueCards = [];
+
+        if (mode === 'shared') {
+            sharedCard = PLAYERS_DB[Math.floor(Math.random() * PLAYERS_DB.length)];
+        } else if (mode === 'unique') {
+            const shuffled = [...PLAYERS_DB].sort(() => Math.random() - 0.5);
+            uniqueCards = shuffled.slice(0, names.length);
+        }
+
+        GameState.imp.players = names.map((name, i) => {
+            const isImp = impostorIndices.has(i);
+            let realCard, displayCard;
+
+            if (mode === 'shared') {
+                realCard = sharedCard;
+                if (isImp) {
+                    displayCard = makeFakeCard(sharedCard);
+                } else {
+                    displayCard = { ...sharedCard };
+                }
+            } else {
+                realCard = uniqueCards[i];
+                displayCard = isImp ? makeFakeCard(realCard) : { ...realCard };
+            }
+
+            return { name, isImpostor: isImp, alive: true, card: realCard, displayCard };
+        });
+        GameState.imp.round = 1;
+        GameState.imp.currentRevealIndex = 0;
+        GameState.imp.votes = {};
+        GameState.imp.discussSeconds = 120;
+    }
+
+    function makeFakeCard(base) {
+        const displayCard = { ...base };
+        displayCard.clue = FAKE_CLUES[Math.floor(Math.random() * FAKE_CLUES.length)];
+        displayCard.rating = Math.max(80, Math.min(92, base.rating + (Math.random() > 0.5 ? 4 : -4)));
+        if (Math.random() < 0.4) {
+            const fake = PLAYERS_DB[Math.floor(Math.random() * PLAYERS_DB.length)];
+            displayCard.name = fake.name;
+            displayCard.pos = fake.pos;
+        }
+        return displayCard;
+    }
+
+    // ============================================================
+    // ============================================================
+    // FUT DRAFT clásico (estilo FC 26)
+    // ============================================================
+    const FORMATIONS = {
+        '4231': {
+            name: '4-2-3-1',
+            slots: [
+                { id:'POR', label:'POR', pos:'POR', x:50, y:90 },
+                { id:'LI', label:'LI', pos:'DEF', x:12, y:72 },
+                { id:'DFC1', label:'DFC', pos:'DEF', x:35, y:78 },
+                { id:'DFC2', label:'DFC', pos:'DEF', x:65, y:78 },
+                { id:'LD', label:'LD', pos:'DEF', x:88, y:72 },
+                { id:'MCD1', label:'MCD', pos:'MED', x:32, y:55 },
+                { id:'MCD2', label:'MCD', pos:'MED', x:68, y:55 },
+                { id:'EI', label:'EI', pos:'MED', x:15, y:32 },
+                { id:'MCO', label:'MCO', pos:'MED', x:50, y:38 },
+                { id:'ED', label:'ED', pos:'MED', x:85, y:32 },
+                { id:'DC', label:'DC', pos:'DEL', x:50, y:14 }
+            ]
+        },
+        '433': {
+            name: '4-3-3',
+            slots: [
+                { id:'POR', label:'POR', pos:'POR', x:50, y:90 },
+                { id:'LI', label:'LI', pos:'DEF', x:12, y:72 },
+                { id:'DFC1', label:'DFC', pos:'DEF', x:35, y:78 },
+                { id:'DFC2', label:'DFC', pos:'DEF', x:65, y:78 },
+                { id:'LD', label:'LD', pos:'DEF', x:88, y:72 },
+                { id:'MC1', label:'MC', pos:'MED', x:25, y:52 },
+                { id:'MC2', label:'MC', pos:'MED', x:50, y:55 },
+                { id:'MC3', label:'MC', pos:'MED', x:75, y:52 },
+                { id:'EI', label:'EI', pos:'DEL', x:18, y:22 },
+                { id:'DC', label:'DC', pos:'DEL', x:50, y:14 },
+                { id:'ED', label:'ED', pos:'DEL', x:82, y:22 }
+            ]
+        },
+        '442': {
+            name: '4-4-2',
+            slots: [
+                { id:'POR', label:'POR', pos:'POR', x:50, y:90 },
+                { id:'LI', label:'LI', pos:'DEF', x:12, y:72 },
+                { id:'DFC1', label:'DFC', pos:'DEF', x:35, y:78 },
+                { id:'DFC2', label:'DFC', pos:'DEF', x:65, y:78 },
+                { id:'LD', label:'LD', pos:'DEF', x:88, y:72 },
+                { id:'MI', label:'MI', pos:'MED', x:15, y:48 },
+                { id:'MC1', label:'MC', pos:'MED', x:38, y:52 },
+                { id:'MC2', label:'MC', pos:'MED', x:62, y:52 },
+                { id:'MD', label:'MD', pos:'MED', x:85, y:48 },
+                { id:'DC1', label:'DC', pos:'DEL', x:35, y:16 },
+                { id:'DC2', label:'DC', pos:'DEL', x:65, y:16 }
+            ]
+        },
+        '352': {
+            name: '3-5-2',
+            slots: [
+                { id:'POR', label:'POR', pos:'POR', x:50, y:90 },
+                { id:'DFC1', label:'DFC', pos:'DEF', x:22, y:75 },
+                { id:'DFC2', label:'DFC', pos:'DEF', x:50, y:80 },
+                { id:'DFC3', label:'DFC', pos:'DEF', x:78, y:75 },
+                { id:'MI', label:'MI', pos:'MED', x:10, y:48 },
+                { id:'MC1', label:'MC', pos:'MED', x:32, y:55 },
+                { id:'MC2', label:'MC', pos:'MED', x:50, y:50 },
+                { id:'MC3', label:'MC', pos:'MED', x:68, y:55 },
+                { id:'MD', label:'MD', pos:'MED', x:90, y:48 },
+                { id:'DC1', label:'DC', pos:'DEL', x:35, y:16 },
+                { id:'DC2', label:'DC', pos:'DEL', x:65, y:16 }
+            ]
+        }
+    };
+
+    function initDraftSetup() {
+        document.getElementById('lobby-screen').classList.add('hidden-screen');
+        document.getElementById('draft-setup-screen').classList.remove('hidden-screen');
+        GameState.draft.formation = '4231';
+        selectFormation('4231');
+    }
+
+    function selectFormation(key) {
+        GameState.draft.formation = key;
+        document.querySelectorAll('.form-btn').forEach(b => {
+            b.className = 'form-btn glass rounded-xl p-4 text-center border border-transparent hover:border-cyber-gold';
+        });
+        const btn = document.getElementById('form-' + key);
+        if (btn) btn.className = 'form-btn glass rounded-xl p-4 text-center border-2 border-cyber-gold bg-cyber-gold/10';
+    }
+
+    function startFutDraft() {
+        const form = FORMATIONS[GameState.draft.formation] || FORMATIONS['4231'];
+        // 11 slots titulares + 5 banco
+        const benchSlots = [
+            { id:'SUP1', label:'SUP', pos:'ANY', x:0, y:0 },
+            { id:'SUP2', label:'SUP', pos:'ANY', x:0, y:0 },
+            { id:'SUP3', label:'SUP', pos:'ANY', x:0, y:0 },
+            { id:'SUP4', label:'SUP', pos:'ANY', x:0, y:0 },
+            { id:'SUP5', label:'SUP', pos:'ANY', x:0, y:0 }
+        ];
+        GameState.draft.slots = [...form.slots, ...benchSlots];
+        GameState.draft.slotIndex = 0;
+        GameState.draft.assigned = {};
+        GameState.draft.bench = [];
+        GameState.draft.usedIds = new Set();
+
+        document.getElementById('draft-setup-screen').classList.add('hidden-screen');
+        document.getElementById('draft-result-screen').classList.add('hidden-screen');
+        document.getElementById('draft-live-screen').classList.remove('hidden-screen');
+        showSlotChoices();
+    }
+
+    function getCandidatesForPos(pos, count) {
+        let pool = PLAYERS_DB.filter(p => !GameState.draft.usedIds.has(p.id));
+        if (pos !== 'ANY') {
+            const matched = pool.filter(p => p.pos === pos);
+            if (matched.length >= count) pool = matched;
+            else {
+                // mezclar con otras posiciones si no hay suficientes
+                const others = pool.filter(p => p.pos !== pos);
+                pool = matched.concat(others);
+            }
+        }
+        pool = [...pool].sort(() => Math.random() - 0.5);
+        // Sesgo hacia mejores ratings (estilo FUT: a veces te salen cracks)
+        pool.sort((a, b) => {
+            const ra = a.rating + Math.random() * 8;
+            const rb = b.rating + Math.random() * 8;
+            return rb - ra;
+        });
+        return pool.slice(0, count);
+    }
+
+    function showSlotChoices() {
+        const slots = GameState.draft.slots;
+        if (GameState.draft.slotIndex >= slots.length) {
+            finishFutDraft();
+            return;
+        }
+        const slot = slots[GameState.draft.slotIndex];
+        const total = slots.length;
+        const idx = GameState.draft.slotIndex + 1;
+        const isBench = slot.label === 'SUP';
+
+        document.getElementById('draft-slot-label').textContent = isBench
+            ? `Suplente ${GameState.draft.bench.length + 1}/5`
+            : slot.label;
+        document.getElementById('draft-slot-progress').textContent = `${idx} / ${total}`;
+        document.getElementById('draft-progress-bar').style.width = ((idx - 1) / total * 100) + '%';
+
+        const choices = getCandidatesForPos(slot.pos, 5);
+        GameState.draft.choices = choices;
+
+        document.getElementById('draft-choices').innerHTML = choices.map((p, i) => {
+            const col = p.rating >= 90 ? 'from-yellow-500 to-amber-700' : p.rating >= 86 ? 'from-slate-300 to-slate-500' : p.rating >= 84 ? 'from-amber-600 to-amber-900' : 'from-orange-800 to-stone-900';
+            return `<button onclick="pickFutChoice(${i})" class="relative rounded-xl bg-gradient-to-b ${col} border-2 border-white/30 shadow-xl p-2 sm:p-3 text-center hover:scale-105 active:scale-95 transition-all min-h-[110px] sm:min-h-[140px]">
+                <span class="absolute top-1 left-1.5 text-xs sm:text-sm font-black text-white drop-shadow">${p.rating}</span>
+                <span class="absolute top-1 right-1.5 text-[9px] font-bold text-white/80">${p.pos}</span>
+                <div class="mt-5 sm:mt-6">
+                    <p class="text-[11px] sm:text-sm font-bold text-white leading-tight line-clamp-2">${p.name}</p>
+                </div>
+                <p class="text-[9px] text-white/50 mt-1 italic line-clamp-2 hidden sm:block">"${p.clue.substring(0,40)}..."</p>
+            </button>`;
+        }).join('');
+
+        updateMiniPitch();
+    }
+
+    function pickFutChoice(choiceIdx) {
+        const p = GameState.draft.choices[choiceIdx];
+        if (!p) return;
+        const slot = GameState.draft.slots[GameState.draft.slotIndex];
+        GameState.draft.usedIds.add(p.id);
+
+        if (slot.label === 'SUP') {
+            GameState.draft.bench.push(p);
+        } else {
+            GameState.draft.assigned[slot.id] = p;
+        }
+        GameState.draft.slotIndex++;
+        showSlotChoices();
+    }
+
+    function updateMiniPitch() {
+        const form = FORMATIONS[GameState.draft.formation] || FORMATIONS['4231'];
+        const el = document.getElementById('draft-mini-pitch');
+        if (!el) return;
+        el.innerHTML = form.slots.map(slot => {
+            const p = GameState.draft.assigned[slot.id];
+            const filled = !!p;
+            return `<div class="absolute -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-[7px] font-bold ${filled ? 'bg-cyber-gold text-cyber-900' : 'bg-black/40 border border-white/20 text-gray-500'}" style="left:${slot.x}%;top:${slot.y}%">${filled ? p.rating : slot.label}</div>`;
+        }).join('');
+    }
+
+    function futCardHTML(p, label) {
+        if (!p) {
+            return `<div class="w-14 h-[4.5rem] sm:w-16 sm:h-20 rounded-lg bg-black/40 border border-dashed border-white/20 flex items-center justify-center text-[9px] text-gray-500">${label}</div>`;
+        }
+        const col = p.rating >= 90 ? 'from-yellow-600 to-yellow-800' : p.rating >= 86 ? 'from-gray-300 to-gray-500' : 'from-amber-700 to-amber-900';
+        return `<div class="w-14 h-[4.5rem] sm:w-16 sm:h-20 rounded-lg bg-gradient-to-b ${col} border border-white/30 shadow-lg flex flex-col items-center justify-center text-center px-0.5 relative">
+            <span class="absolute top-0.5 left-1 text-[8px] font-bold text-white/80">${p.rating}</span>
+            <span class="absolute top-0.5 right-1 text-[7px] text-white/70">${label}</span>
+            <span class="text-[9px] sm:text-[10px] font-bold text-white leading-tight mt-2 line-clamp-2">${p.name.split(' ').slice(-1)[0]}</span>
+            <span class="text-[7px] text-white/60">${p.pos}</span>
+        </div>`;
+    }
+
+    function calcOVRFromAssigned() {
+        const starters = Object.values(GameState.draft.assigned);
+        if (!starters.length) return 0;
+        return Math.round(starters.reduce((s, p) => s + p.rating, 0) / starters.length);
+    }
+
+    function calcChemFromAssigned() {
+        const starters = Object.values(GameState.draft.assigned);
+        if (!starters.length) return 0;
+        const counts = { POR:0, DEF:0, MED:0, DEL:0 };
+        starters.forEach(p => counts[p.pos]++);
+        let chem = 40;
+        if (counts.POR >= 1) chem += 12;
+        if (counts.DEF >= 3) chem += 18;
+        if (counts.MED >= 3) chem += 18;
+        if (counts.DEL >= 1) chem += 12;
+        const ovr = calcOVRFromAssigned();
+        if (ovr >= 88) chem += 10;
+        else if (ovr >= 85) chem += 5;
+        return Math.min(100, chem);
+    }
+
+    function finishFutDraft() {
+        document.getElementById('draft-live-screen').classList.add('hidden-screen');
+        document.getElementById('draft-result-screen').classList.remove('hidden-screen');
+
+        const form = FORMATIONS[GameState.draft.formation] || FORMATIONS['4231'];
+        document.getElementById('fut-formation-label').textContent = 'Formación ' + form.name;
+
+        const ovr = calcOVRFromAssigned();
+        const chem = calcChemFromAssigned();
+        document.getElementById('fut-ovr').textContent = ovr;
+        document.getElementById('fut-chem').textContent = chem;
+        document.getElementById('fut-chem-bar').style.width = chem + '%';
+        const stars = Math.min(5, Math.max(1, Math.round((ovr - 78) / 3)));
+        document.getElementById('fut-stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+
+        document.getElementById('fut-pitch').innerHTML = form.slots.map(slot => {
+            const p = GameState.draft.assigned[slot.id];
+            return `<div class="absolute -translate-x-1/2 -translate-y-1/2" style="left:${slot.x}%;top:${slot.y}%">${futCardHTML(p, slot.label)}</div>`;
+        }).join('');
+
+        document.getElementById('fut-bench').innerHTML = GameState.draft.bench.length
+            ? GameState.draft.bench.map(p => futCardHTML(p, 'SUP')).join('')
+            : '<p class="text-gray-500 text-sm">Sin suplentes</p>';
+
+        if (ovr >= 86) launchConfetti();
+    }
+
+    function showPassToPlayer() {
+        const p = GameState.imp.players[GameState.imp.currentRevealIndex];
+        document.getElementById('reveal-pass-phase').classList.remove('hidden');
+        document.getElementById('reveal-role-phase').classList.add('hidden');
+        document.getElementById('reveal-player-name').textContent = p.name;
+        document.getElementById('reveal-player-name-btn').textContent = p.name;
+    }
+
+    function showPlayerRole() {
+        const p = GameState.imp.players[GameState.imp.currentRevealIndex];
+        document.getElementById('reveal-pass-phase').classList.add('hidden');
+        document.getElementById('reveal-role-phase').classList.remove('hidden');
+
+        const card = document.getElementById('role-card');
+        const title = document.getElementById('role-title');
+        const desc = document.getElementById('role-desc');
+        const pcard = document.getElementById('role-player-card');
+
+        if (p.isImpostor) {
+            card.className = 'rounded-2xl p-8 mb-6 role-impostor';
+            title.innerHTML = '<span class="text-cyber-accent">IMPOSTOR SABOTEADOR</span>';
+            desc.textContent = 'Tienes datos FALSOS o alterados. Debes disimular, inventar y no ser descubierto. ¡Engaña al resto!';
+            pcard.innerHTML = `
+                <p class="text-xs text-cyber-accent mb-2"><i class="fas fa-exclamation-triangle mr-1"></i> Información alterada — úsala con cuidado</p>
+                <p class="font-bold text-xl">${p.displayCard.name}</p>
+                <p class="text-sm text-gray-400 mb-2">${p.displayCard.pos} • Rating aparente: ${p.displayCard.rating}</p>
+                <p class="text-gray-300 italic text-sm">"${p.displayCard.clue}"</p>
+            `;
+        } else {
+            card.className = 'rounded-2xl p-8 mb-6 role-crew';
+            title.innerHTML = '<span class="text-cyber-neon">ENTRENADOR LEAL</span>';
+            const modeHint = GameState.imp.cardMode === 'shared'
+                ? 'Todos los leales tienen el MISMO jugador. Usa las pistas verdaderas para pillar al impostor.'
+                : 'Tu carta es REAL y distinta a la de los demás. Analiza contradicciones en el debate.';
+            desc.textContent = modeHint;
+            pcard.innerHTML = `
+                <p class="font-bold text-xl">${p.displayCard.name}</p>
+                <p class="text-sm text-gray-400 mb-2">${p.displayCard.pos} • Rating: ${p.displayCard.rating}</p>
+                <p class="text-gray-300 italic text-sm">"${p.displayCard.clue}"</p>
+            `;
+        }
+    }
+
+    function nextPlayerReveal() {
+        GameState.imp.currentRevealIndex++;
+        if (GameState.imp.currentRevealIndex >= GameState.imp.players.length) {
+            // Todos vieron su rol → debate
+            document.getElementById('impostor-reveal-screen').classList.add('hidden-screen');
+            document.getElementById('impostor-discuss-screen').classList.remove('hidden-screen');
+            startDiscussTimer();
+            document.getElementById('discuss-players-list').innerHTML = GameState.imp.players.map(p =>
+                `<span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full glass text-sm">${p.name}</span>`
+            ).join('');
+            return;
+        }
+        showPassToPlayer();
+    }
+
+    function startDiscussTimer() {
+        clearInterval(GameState.imp.discussInterval);
+        updateDiscussTimerDisplay();
+        GameState.imp.discussInterval = setInterval(() => {
+            GameState.imp.discussSeconds--;
+            updateDiscussTimerDisplay();
+            if (GameState.imp.discussSeconds <= 0) {
+                clearInterval(GameState.imp.discussInterval);
+                // Auto ir a votación o dejar que pulsen
+            }
+        }, 1000);
+    }
+    function updateDiscussTimerDisplay() {
+        const m = Math.floor(GameState.imp.discussSeconds / 60);
+        const s = GameState.imp.discussSeconds % 60;
+        document.getElementById('discuss-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (GameState.imp.discussSeconds <= 30) document.getElementById('discuss-timer').classList.add('text-cyber-accent');
+        else document.getElementById('discuss-timer').classList.remove('text-cyber-accent');
+    }
+    function adjustDiscussTime(delta) {
+        GameState.imp.discussSeconds = Math.max(0, GameState.imp.discussSeconds + delta);
+        updateDiscussTimerDisplay();
+    }
+
+    function startVotingPhase() {
+        clearInterval(GameState.imp.discussInterval);
+        document.getElementById('impostor-discuss-screen').classList.add('hidden-screen');
+        document.getElementById('impostor-vote-screen').classList.remove('hidden-screen');
+        GameState.imp.currentVoteIndex = 0;
+        GameState.imp.votes = {};
+        showVotePass();
+    }
+
+    function showVotePass() {
+        const p = GameState.imp.players[GameState.imp.currentVoteIndex];
+        document.getElementById('vote-pass-phase').classList.remove('hidden');
+        document.getElementById('vote-options-phase').classList.add('hidden');
+        document.getElementById('vote-player-name').textContent = p.name;
+        document.getElementById('vote-player-name-btn').textContent = p.name;
+    }
+
+    function showVoteOptions() {
+        const voter = GameState.imp.players[GameState.imp.currentVoteIndex];
+        document.getElementById('vote-pass-phase').classList.add('hidden');
+        document.getElementById('vote-options-phase').classList.remove('hidden');
+        document.getElementById('voting-as-name').textContent = voter.name;
+
+        const container = document.getElementById('vote-buttons');
+        container.innerHTML = GameState.imp.players
+            .filter(p => p.name !== voter.name)
+            .map(p => `
+                <button onclick="castPlayerVote('${p.name.replace(/'/g,"\\'")}')" 
+                    class="w-full btn-cyber glass rounded-xl py-4 font-bold text-left px-5 hover:border-cyber-accent border border-transparent transition-all flex items-center justify-between">
+                    <span>${p.name}</span>
+                    <i class="fas fa-chevron-right text-gray-500"></i>
+                </button>
+            `).join('');
+    }
+
+    function castPlayerVote(targetName) {
+        const voter = GameState.imp.players[GameState.imp.currentVoteIndex];
+        GameState.imp.votes[voter.name] = targetName;
+        advanceVote();
+    }
+    function skipVote() {
+        const voter = GameState.imp.players[GameState.imp.currentVoteIndex];
+        GameState.imp.votes[voter.name] = null;
+        advanceVote();
+    }
+    function advanceVote() {
+        GameState.imp.currentVoteIndex++;
+        if (GameState.imp.currentVoteIndex >= GameState.imp.players.length) {
+            showImpostorResults();
+            return;
+        }
+        showVotePass();
+    }
+
+    function showImpostorResults() {
+        document.getElementById('impostor-vote-screen').classList.add('hidden-screen');
+        document.getElementById('impostor-result-screen').classList.remove('hidden-screen');
+
+        // Contar votos
+        const tally = {};
+        Object.values(GameState.imp.votes).forEach(t => {
+            if (t) tally[t] = (tally[t] || 0) + 1;
+        });
+        let maxVotes = 0, mostVoted = null;
+        for (const [name, count] of Object.entries(tally)) {
+            if (count > maxVotes) { maxVotes = count; mostVoted = name; }
+        }
+
+        const realImpostors = GameState.imp.players.filter(p => p.isImpostor).map(p => p.name);
+        const correct = mostVoted && realImpostors.includes(mostVoted);
+
+        const content = document.getElementById('result-content');
+        if (correct) {
+            content.innerHTML = `
+                <i class="fas fa-check-circle text-6xl text-cyber-neon mb-4"></i>
+                <h2 class="font-montserrat text-3xl font-black text-cyber-neon mb-2">¡Los Leales ganan!</h2>
+                <p class="text-gray-300">El más votado fue <strong>${mostVoted}</strong> (${maxVotes} voto${maxVotes!==1?'s':''}) y era Impostor.</p>
+            `;
+            launchConfetti();
+        } else {
+            content.innerHTML = `
+                <i class="fas fa-user-secret text-6xl text-cyber-accent mb-4"></i>
+                <h2 class="font-montserrat text-3xl font-black text-cyber-accent mb-2">¡Los Impostores ganan!</h2>
+                <p class="text-gray-300">${mostVoted ? `El más votado fue <strong>${mostVoted}</strong>, pero no era el impostor.` : 'Nadie recibió suficientes votos.'}</p>
+                <p class="text-gray-400 mt-2">Impostor${realImpostors.length>1?'es':''} real${realImpostors.length>1?'es':''}: <strong class="text-cyber-accent">${realImpostors.join(', ')}</strong></p>
+            `;
+        }
+
+        // Mostrar todos los roles
+        document.getElementById('result-roles').innerHTML = `
+            <h3 class="font-bold mb-4 text-center">Revelación de roles</h3>
+            <div class="space-y-2">
+                ${GameState.imp.players.map(p => `
+                    <div class="flex items-center justify-between rounded-xl px-4 py-3 ${p.isImpostor ? 'bg-cyber-accent/15 border border-cyber-accent/40' : 'bg-cyber-neon/10 border border-cyber-neon/30'}">
+                        <div>
+                            <p class="font-bold">${p.name}</p>
+                            <p class="text-xs text-gray-400">${p.card.name} (${p.card.pos} ${p.card.rating})</p>
+                        </div>
+                        <span class="text-sm font-bold ${p.isImpostor ? 'text-cyber-accent' : 'text-cyber-neon'}">
+                            ${p.isImpostor ? 'IMPOSTOR' : 'LEAL'}
+                        </span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/10 text-sm text-gray-400">
+                <p class="font-bold text-white mb-1">Votos:</p>
+                ${Object.entries(GameState.imp.votes).map(([voter, target]) => 
+                    `<p>${voter} → ${target || '(no votó)'}</p>`
+                ).join('')}
+            </div>
+        `;
+    }
+
+    function restartImpostor() {
+        document.getElementById('impostor-result-screen').classList.add('hidden-screen');
+        const names = GameState.imp.players.map(p => p.name);
+        const mode = GameState.imp.cardMode === 'unique' ? 'unique' : 'shared';
+        assignRolesAndCards(names, mode, null);
+        document.getElementById('impostor-reveal-screen').classList.remove('hidden-screen');
+        showPassToPlayer();
+    }
+
+    // ============================================================
+    // UTILIDADES
+    // ============================================================
+    function confirmExit() {
+        document.getElementById('exit-modal').classList.remove('hidden');
+        document.getElementById('exit-modal').classList.add('flex');
+    }
+    function closeExitModal() {
+        document.getElementById('exit-modal').classList.add('hidden');
+        document.getElementById('exit-modal').classList.remove('flex');
+    }
+    function returnToLobby() {
+        clearInterval(GameState.timerInterval);
+        clearInterval(GameState.imp.discussInterval);
+        ['auction-screen','tournament-screen','match-screen','champion-screen',
+         'impostor-setup-screen','impostor-reveal-screen','impostor-discuss-screen',
+         'impostor-vote-screen','impostor-result-screen',
+         'draft-setup-screen','draft-live-screen','draft-result-screen','exit-modal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.classList.add('hidden-screen'); el.classList.remove('flex'); }
+        });
+        document.getElementById('lobby-screen').classList.remove('hidden-screen');
+        GameState.currentMode = null;
+        GameState.mySquad = [];
+        GameState.round = 0;
+    }
+    </script>
+</body>
+</html>
